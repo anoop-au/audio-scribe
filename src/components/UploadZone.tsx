@@ -44,14 +44,26 @@ export default function UploadZone({ onFileSelect, selectedFile, onClear }: Uplo
           onDrop={onDrop}
           onDragOver={onDragOver}
           onDragLeave={onDragLeave}
-          className={`
-            relative flex flex-col items-center justify-center w-full min-h-[220px] p-8
-            rounded-2xl border cursor-pointer transition-all duration-300
-            ${isDragging
-              ? "border-accent bg-accent/5 shadow-[0_0_24px_-4px_hsl(var(--accent)/0.3),inset_0_0_20px_0_hsl(var(--accent)/0.06)]"
-              : "border-accent/20 hover:border-accent/60 hover:shadow-[0_0_16px_-4px_hsl(var(--accent)/0.15)] bg-card/40"
+          className="relative flex flex-col items-center justify-center w-full min-h-[220px] p-8 rounded-2xl cursor-pointer transition-all duration-300 backdrop-blur-xl"
+          style={{
+            background: 'rgba(255, 255, 255, 0.03)',
+            border: `1px solid ${isDragging ? 'rgba(0, 212, 255, 0.8)' : 'rgba(0, 212, 255, 0.3)'}`,
+            boxShadow: isDragging
+              ? 'inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 0 20px rgba(0, 212, 255, 0.3), 0 8px 32px 0 rgba(0, 0, 0, 0.08)'
+              : 'inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 8px 32px 0 rgba(0, 0, 0, 0.08)',
+          }}
+          onMouseEnter={(e) => {
+            if (!isDragging) {
+              e.currentTarget.style.borderColor = 'rgba(0, 212, 255, 0.8)';
+              e.currentTarget.style.boxShadow = 'inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 0 20px rgba(0, 212, 255, 0.3), 0 8px 32px 0 rgba(0, 0, 0, 0.08)';
             }
-          `}
+          }}
+          onMouseLeave={(e) => {
+            if (!isDragging) {
+              e.currentTarget.style.borderColor = 'rgba(0, 212, 255, 0.3)';
+              e.currentTarget.style.boxShadow = 'inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 8px 32px 0 rgba(0, 0, 0, 0.08)';
+            }
+          }}
         >
           <input
             type="file"
@@ -71,7 +83,7 @@ export default function UploadZone({ onFileSelect, selectedFile, onClear }: Uplo
           <p className="text-base font-semibold mb-1">
             Drop your file here, or <span className="text-accent">browse</span>
           </p>
-          <p className="text-xs text-muted-foreground font-mono tracking-wide">
+          <p className="text-xs text-muted-foreground/70 font-mono" style={{ letterSpacing: '1px' }}>
             MP3 · WAV · M4A · OGG · MP4 · MOV · AVI
           </p>
         </label>
