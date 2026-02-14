@@ -73,7 +73,7 @@ export default function UploadZone({ onFileSelect, selectedFile, onClear }: Uplo
           </p>
         </label>
       ) : (
-        <div className="glass-card rounded-2xl p-5 flex items-center gap-4 animate-slide-fade-in">
+        <div className="glassmorphism-card rounded-2xl p-5 flex items-center gap-4 animate-slide-fade-in">
           <div className="p-3 rounded-xl bg-accent/10">
             {isAudio ? (
               <FileAudio className="w-5 h-5 text-accent" />
@@ -84,12 +84,12 @@ export default function UploadZone({ onFileSelect, selectedFile, onClear }: Uplo
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-sm truncate">{selectedFile.name}</p>
             <p className="text-xs text-muted-foreground font-mono">
-              {formatFileSize(selectedFile.size)} · {selectedFile.estimatedDuration}
+              {formatFileSize(selectedFile.size)} · {selectedFile.estimatedDuration} · <span className="uppercase text-accent/80">{selectedFile.name.split('.').pop()}</span>
             </p>
           </div>
           <button
             onClick={onClear}
-            className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            className="p-2.5 rounded-lg hover:bg-destructive/10 transition-all duration-200 text-muted-foreground hover:text-destructive active:scale-95"
           >
             <X className="w-4 h-4" />
           </button>

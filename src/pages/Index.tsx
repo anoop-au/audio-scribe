@@ -87,8 +87,12 @@ export default function Index() {
               {fileInfo && (
                 <Button
                   onClick={handleStart}
-                  className="w-full h-12 text-base bg-accent text-accent-foreground hover:bg-accent/90 animate-fade-up"
-                  style={{ animationDelay: "0.1s" }}
+                  className="w-full h-12 text-base font-bold text-white hover:brightness-110 active:scale-[0.98] transition-all duration-200 animate-fade-up border-0"
+                  style={{
+                    background: 'linear-gradient(135deg, #00d4ff 0%, #0099ff 100%)',
+                    boxShadow: '0 4px 16px rgba(0, 212, 255, 0.3)',
+                    animationDelay: '0.1s',
+                  }}
                 >
                   Start Transcription
                 </Button>
