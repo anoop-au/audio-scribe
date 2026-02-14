@@ -1,4 +1,4 @@
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,12 +14,13 @@ export default function ProcessingOptions({ options, onChange }: ProcessingOptio
     <div className="space-y-4">
       <p className="text-xs font-mono text-muted-foreground tracking-wider uppercase">Quick Settings</p>
       <div className="flex items-center gap-3">
-        <Checkbox
+        <Switch
           id="translate"
           checked={options.translateToEnglish}
           onCheckedChange={(checked) =>
-            onChange({ ...options, translateToEnglish: !!checked })
+            onChange({ ...options, translateToEnglish: checked })
           }
+          className="data-[state=checked]:bg-accent"
         />
         <Label htmlFor="translate" className="text-sm cursor-pointer">
           Translate to English
