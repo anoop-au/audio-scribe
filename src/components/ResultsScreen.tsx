@@ -36,7 +36,7 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
   const preview = result.transcript.slice(0, 500) + (result.transcript.length > 500 ? "..." : "");
 
   return (
-    <div className="flex flex-col items-center gap-8 animate-fade-up">
+    <div className="flex flex-col items-center gap-8 animate-slide-fade-in">
       {/* Success Icon */}
       <div className="relative">
         <div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center animate-scale-check">
@@ -57,8 +57,8 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
             ["Words", result.wordCount.toLocaleString()],
           ].map(([label, value]) => (
             <div key={label as string}>
-              <p className="text-muted-foreground text-xs mb-0.5">{label}</p>
-              <p className="font-medium truncate">{value}</p>
+              <p className="text-muted-foreground text-xs mb-0.5 font-mono">{label}</p>
+              <p className="font-semibold text-sm truncate font-mono">{value}</p>
             </div>
           ))}
         </div>

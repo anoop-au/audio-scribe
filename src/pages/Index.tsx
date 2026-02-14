@@ -48,15 +48,15 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen gradient-bg">
+    <div className="min-h-screen gradient-bg grid-pattern">
       <div className="max-w-2xl mx-auto px-4 py-12 sm:py-20">
         {/* Header */}
         <header className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-mono font-medium mb-4">
             <Wand2 className="w-3 h-3" />
             AI-Powered Transcription
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
             Transcribe anything,{" "}
             <span className="text-gradient bg-gradient-to-r from-accent to-accent/60">instantly</span>
           </h1>
@@ -68,45 +68,49 @@ export default function Index() {
         {/* Content */}
         <div className="glass-card rounded-3xl p-6 sm:p-8">
           {state === "upload" && (
-            <div className="space-y-6">
+            <div className="space-y-6 animate-slide-fade-in">
               <UploadZone
                 onFileSelect={handleFileSelect}
                 selectedFile={fileInfo}
                 onClear={handleClear}
               />
 
+              {/* Quick Settings bar — always visible */}
+              <div className="border-t border-border/40 pt-5">
+                <ProcessingOptions options={options} onChange={setOptions} />
+              </div>
+
               {fileInfo && (
-                <>
-                  <div className="border-t border-border pt-6">
-                    <ProcessingOptions options={options} onChange={setOptions} />
-                  </div>
-                  <Button
-                    onClick={handleStart}
-                    className="w-full h-12 text-base bg-accent text-accent-foreground hover:bg-accent/90 animate-fade-up"
-                    style={{ animationDelay: "0.2s" }}
-                  >
-                    Start Transcription
-                  </Button>
-                </>
+                <Button
+                  onClick={handleStart}
+                  className="w-full h-12 text-base bg-accent text-accent-foreground hover:bg-accent/90 animate-fade-up"
+                  style={{ animationDelay: "0.1s" }}
+                >
+                  Start Transcription
+                </Button>
               )}
             </div>
           )}
 
           {state === "processing" && fileInfo && (
-            <ProcessingScreen
-              fileInfo={fileInfo}
-              onComplete={handleComplete}
-              onCancel={handleReset}
-            />
+            <div className="animate-slide-fade-in">
+              <ProcessingScreen
+                fileInfo={fileInfo}
+                onComplete={handleComplete}
+                onCancel={handleReset}
+              />
+            </div>
           )}
 
           {state === "results" && result && (
-            <ResultsScreen result={result} onReset={handleReset} />
+            <div className="animate-slide-fade-in">
+              <ResultsScreen result={result} onReset={handleReset} />
+            </div>
           )}
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground/60 mt-8">
+        <p className="text-center text-xs text-muted-foreground/60 mt-8 font-mono">
           Your files are processed securely and never stored
         </p>
       </div>
