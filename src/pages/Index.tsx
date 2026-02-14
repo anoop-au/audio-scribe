@@ -5,6 +5,7 @@ import UploadZone from "@/components/UploadZone";
 import ProcessingOptions from "@/components/ProcessingOptions";
 import ProcessingScreen from "@/components/ProcessingScreen";
 import ResultsScreen from "@/components/ResultsScreen";
+import ThemeToggle from "@/components/ThemeToggle";
 import type { FileInfo, ProcessingOptions as Options, TranscriptionResult } from "@/lib/mock";
 
 type AppState = "upload" | "processing" | "results";
@@ -51,7 +52,10 @@ export default function Index() {
     <div className="min-h-screen gradient-bg grid-pattern">
       <div className="max-w-2xl mx-auto px-4 py-12 sm:py-20">
         {/* Header */}
-        <header className="text-center mb-10">
+        <header className="text-center mb-10 relative">
+          <div className="absolute right-0 top-0">
+            <ThemeToggle />
+          </div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-mono font-medium mb-4">
             <Wand2 className="w-3 h-3" />
             AI-Powered Transcription
@@ -76,14 +80,7 @@ export default function Index() {
               />
 
               {/* Quick Settings bar — always visible */}
-              <div
-                className="border-t border-border/40 pt-5 mt-5 rounded-2xl px-5 py-5 backdrop-blur-xl"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(0, 212, 255, 0.2)',
-                  boxShadow: 'inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 8px 32px 0 rgba(0, 0, 0, 0.06)',
-                }}
-              >
+              <div className="glassmorphism-card rounded-2xl px-5 py-5">
                 <ProcessingOptions options={options} onChange={setOptions} />
               </div>
 
