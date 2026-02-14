@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { Wand2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import UploadZone from "@/components/UploadZone";
 import ProcessingOptions from "@/components/ProcessingOptions";
@@ -71,50 +72,71 @@ export default function Index() {
 
         {/* Content */}
         <div className="glass-card rounded-3xl p-6 sm:p-8">
-          {state === "upload" && (
-            <div className="space-y-6 animate-slide-fade-in">
-              <UploadZone
-                onFileSelect={handleFileSelect}
-                selectedFile={fileInfo}
-                onClear={handleClear}
-              />
+          <AnimatePresence mode="wait">
+            {state === "upload" && (
+              <motion.div
+                key="upload"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.97 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className="space-y-6"
+              >
+                <UploadZone
+                  onFileSelect={handleFileSelect}
+                  selectedFile={fileInfo}
+                  onClear={handleClear}
+                />
 
-              {/* Quick Settings bar — always visible */}
-              <div className="glassmorphism-card rounded-2xl px-5 py-5">
-                <ProcessingOptions options={options} onChange={setOptions} />
-              </div>
+                {/* Quick Settings bar — always visible */}
+                <div className="glassmorphism-card rounded-2xl px-5 py-5">
+                  <ProcessingOptions options={options} onChange={setOptions} />
+                </div>
 
-              {fileInfo && (
-                <Button
-                  onClick={handleStart}
-                  className="w-full h-12 text-base font-bold text-white hover:brightness-110 active:scale-[0.98] transition-all duration-200 animate-fade-up border-0"
-                  style={{
-                    background: 'linear-gradient(135deg, #00d4ff 0%, #0099ff 100%)',
-                    boxShadow: '0 4px 16px rgba(0, 212, 255, 0.3)',
-                    animationDelay: '0.1s',
-                  }}
-                >
-                  Start Transcription
-                </Button>
-              )}
-            </div>
-          )}
+                {fileInfo && (
+                  <Button
+                    onClick={handleStart}
+                    className="w-full h-12 text-base font-bold text-white hover:brightness-110 active:scale-[0.98] transition-all duration-200 animate-fade-up border-0"
+                    style={{
+                      background: 'linear-gradient(135deg, #00d4ff 0%, #0099ff 100%)',
+                      boxShadow: '0 4px 16px rgba(0, 212, 255, 0.3)',
+                      animationDelay: '0.1s',
+                    }}
+                  >
+                    Start Transcription
+                  </Button>
+                )}
+              </motion.div>
+            )}
 
-          {state === "processing" && fileInfo && (
-            <div className="animate-slide-fade-in">
-              <ProcessingScreen
-                fileInfo={fileInfo}
-                onComplete={handleComplete}
-                onCancel={handleReset}
-              />
-            </div>
-          )}
+            {state === "processing" && fileInfo && (
+              <motion.div
+                key="processing"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.97 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <ProcessingScreen
+                  fileInfo={fileInfo}
+                  onComplete={handleComplete}
+                  onCancel={handleReset}
+                />
+              </motion.div>
+            )}
 
-          {state === "results" && result && (
-            <div className="animate-slide-fade-in">
-              <ResultsScreen result={result} onReset={handleReset} />
-            </div>
-          )}
+            {state === "results" && result && (
+              <motion.div
+                key="results"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ResultsScreen result={result} onReset={handleReset} />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Footer */}
