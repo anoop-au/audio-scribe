@@ -76,7 +76,14 @@ export default function Index() {
               />
 
               {/* Quick Settings bar — always visible */}
-              <div className="border-t border-border/40 pt-5">
+              <div
+                className="border-t border-border/40 pt-5 mt-5 rounded-2xl px-5 py-5 backdrop-blur-xl"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(0, 212, 255, 0.2)',
+                  boxShadow: 'inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 8px 32px 0 rgba(0, 0, 0, 0.06)',
+                }}
+              >
                 <ProcessingOptions options={options} onChange={setOptions} />
               </div>
 
