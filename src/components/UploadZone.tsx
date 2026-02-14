@@ -38,18 +38,18 @@ export default function UploadZone({ onFileSelect, selectedFile, onClear }: Uplo
   const isAudio = selectedFile?.type.startsWith("audio");
 
   return (
-    <div className="w-full animate-fade-up">
+    <div className="w-full">
       {!selectedFile ? (
         <label
           onDrop={onDrop}
           onDragOver={onDragOver}
           onDragLeave={onDragLeave}
           className={`
-            relative flex flex-col items-center justify-center w-full min-h-[240px] p-8
-            rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-300
+            relative flex flex-col items-center justify-center w-full min-h-[220px] p-8
+            rounded-2xl border cursor-pointer transition-all duration-300
             ${isDragging
-              ? "border-accent bg-accent/5 glow-accent"
-              : "border-border hover:border-accent/50 hover:bg-muted/50"
+              ? "border-accent bg-accent/5 shadow-[0_0_24px_-4px_hsl(var(--accent)/0.3),inset_0_0_20px_0_hsl(var(--accent)/0.06)]"
+              : "border-accent/20 hover:border-accent/60 hover:shadow-[0_0_16px_-4px_hsl(var(--accent)/0.15)] bg-card/40"
             }
           `}
         >
@@ -64,29 +64,29 @@ export default function UploadZone({ onFileSelect, selectedFile, onClear }: Uplo
           />
           <div className={`
             p-4 rounded-2xl mb-4 transition-all duration-300
-            ${isDragging ? "bg-accent/10" : "bg-muted"}
+            ${isDragging ? "bg-accent/10" : "bg-muted/60"}
           `}>
-            <Upload className={`w-8 h-8 transition-colors ${isDragging ? "text-accent" : "text-muted-foreground"}`} />
+            <Upload className={`w-8 h-8 animate-icon-pulse transition-colors ${isDragging ? "text-accent" : "text-muted-foreground"}`} />
           </div>
-          <p className="text-base font-medium mb-1">
+          <p className="text-base font-semibold mb-1">
             Drop your file here, or <span className="text-accent">browse</span>
           </p>
-          <p className="text-sm text-muted-foreground">
-            MP3, WAV, M4A, OGG, MP4, MOV, AVI
+          <p className="text-xs text-muted-foreground font-mono tracking-wide">
+            MP3 · WAV · M4A · OGG · MP4 · MOV · AVI
           </p>
         </label>
       ) : (
-        <div className="glass-card rounded-2xl p-6 flex items-center gap-4">
+        <div className="glass-card rounded-2xl p-5 flex items-center gap-4 animate-slide-fade-in">
           <div className="p-3 rounded-xl bg-accent/10">
             {isAudio ? (
-              <FileAudio className="w-6 h-6 text-accent" />
+              <FileAudio className="w-5 h-5 text-accent" />
             ) : (
-              <FileVideo className="w-6 h-6 text-accent" />
+              <FileVideo className="w-5 h-5 text-accent" />
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-medium truncate">{selectedFile.name}</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-semibold text-sm truncate">{selectedFile.name}</p>
+            <p className="text-xs text-muted-foreground font-mono">
               {formatFileSize(selectedFile.size)} · {selectedFile.estimatedDuration}
             </p>
           </div>

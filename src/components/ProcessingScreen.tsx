@@ -111,7 +111,7 @@ export default function ProcessingScreen({ fileInfo, onComplete, onCancel }: Pro
   const offset = circumference - (progress / 100) * circumference;
 
   return (
-    <div className="flex flex-col items-center gap-8 animate-fade-up">
+    <div className="flex flex-col items-center gap-8 animate-slide-fade-in">
       {/* Progress Ring */}
       <div className="relative">
         <svg width="140" height="140" className="-rotate-90">

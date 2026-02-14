@@ -11,7 +11,8 @@ interface ProcessingOptionsProps {
 
 export default function ProcessingOptions({ options, onChange }: ProcessingOptionsProps) {
   return (
-    <div className="space-y-5 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+    <div className="space-y-4">
+      <p className="text-xs font-mono text-muted-foreground tracking-wider uppercase">Quick Settings</p>
       <div className="flex items-center gap-3">
         <Checkbox
           id="translate"
@@ -26,15 +27,15 @@ export default function ProcessingOptions({ options, onChange }: ProcessingOptio
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label className="text-sm text-muted-foreground">Output Format</Label>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground font-mono">Output Format</Label>
           <Select
             value={options.outputFormat}
             onValueChange={(v) =>
               onChange({ ...options, outputFormat: v as Options["outputFormat"] })
             }
           >
-            <SelectTrigger className="bg-card">
+            <SelectTrigger className="bg-card/60 border-border/40 h-9 text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -46,13 +47,13 @@ export default function ProcessingOptions({ options, onChange }: ProcessingOptio
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label className="text-sm text-muted-foreground">Language Hint (optional)</Label>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground font-mono">Language Hint</Label>
           <Input
             placeholder="e.g., Malayalam, Spanish"
             value={options.languageHint}
             onChange={(e) => onChange({ ...options, languageHint: e.target.value })}
-            className="bg-card"
+            className="bg-card/60 border-border/40 h-9 text-sm"
           />
         </div>
       </div>
