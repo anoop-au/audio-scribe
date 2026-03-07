@@ -61,9 +61,16 @@ export default function Index() {
             <Wand2 className="w-3 h-3" />
             AI-Powered Transcription
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
-            Transcribe anything,{" "}
-            <span className="text-gradient bg-gradient-to-r from-accent to-accent/60">instantly</span>
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-2">
+            <span
+              className="bg-clip-text text-transparent"
+              style={{
+                backgroundImage: "linear-gradient(135deg, #00d4ff 0%, #8b5cf6 50%, #00d9ff 100%)",
+                filter: "drop-shadow(0 0 20px rgba(0, 212, 255, 0.3))",
+              }}
+            >
+              Aurascribe
+            </span>
           </h1>
           <p className="text-muted-foreground text-base max-w-md mx-auto">
             Upload audio or video and get accurate transcripts in seconds. Supports 50+ languages.
