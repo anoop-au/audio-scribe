@@ -147,9 +147,15 @@ export default function Index() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground/60 mt-8 font-mono">
-          Your files are processed securely and never stored
-        </p>
+        <footer className="text-center mt-8 space-y-1">
+          <p className="text-xs text-muted-foreground/60 font-mono">
+            Your files are processed securely and never stored
+          </p>
+          <p className="text-[11px] text-muted-foreground/40 font-mono">
+            Built with <span className="text-accent/60">♥</span> by{" "}
+            <span className="text-muted-foreground/60">Anoop Mukundan</span>
+          </p>
+        </footer>
       </div>
     </div>
   );
