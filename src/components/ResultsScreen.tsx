@@ -239,8 +239,8 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
               onClick={handleDownload}
               className="flex-1 gap-2 h-11 text-sm font-bold text-white border-0 hover:brightness-110 active:scale-[0.98] transition-all"
               style={{
-                background: "linear-gradient(135deg, #00d4ff 0%, #0099ff 100%)",
-                boxShadow: "0 4px 16px rgba(0,212,255,0.3)",
+                background: "linear-gradient(135deg, #ff6a00 0%, #ff2d92 100%)",
+                boxShadow: "0 4px 16px rgba(255,106,0,0.3)",
               }}
             >
               <Download className="w-4 h-4" /> Download {selectedFormat}

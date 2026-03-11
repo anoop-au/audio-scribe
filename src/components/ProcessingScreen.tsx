@@ -139,12 +139,12 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
     >
       {/* Progress Ring */}
       <div className="relative" style={{ width: ringSize, height: ringSize }}>
-        <div className="absolute inset-0 rounded-full blur-xl opacity-30" style={{ background: "conic-gradient(from 0deg, #00d4ff, #8b5cf6, #00d4ff)" }} />
+        <div className="absolute inset-0 rounded-full blur-xl opacity-30" style={{ background: "conic-gradient(from 0deg, #ff6a00, #ff2d92, #00d4ff, #ff6a00)" }} />
         <svg width={ringSize} height={ringSize} className="-rotate-90 relative z-10">
           <defs>
             <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#00d4ff" />
-              <stop offset="50%" stopColor="#8b5cf6" />
+              <stop offset="0%" stopColor="#ff6a00" />
+              <stop offset="50%" stopColor="#ff2d92" />
               <stop offset="100%" stopColor="#00d4ff" />
             </linearGradient>
             <filter id="neonGlow">
