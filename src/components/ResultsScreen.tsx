@@ -208,9 +208,9 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
               }
             `}
             style={selectedFormat === fmt ? {
-              background: "linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,153,255,0.2))",
-              border: "1px solid rgba(0,212,255,0.4)",
-              boxShadow: "0 0 12px rgba(0,212,255,0.15)",
+              background: "linear-gradient(135deg, rgba(255,106,0,0.2), rgba(255,45,146,0.2))",
+              border: "1px solid rgba(255,106,0,0.4)",
+              boxShadow: "0 0 12px rgba(255,106,0,0.15)",
             } : { border: "1px solid transparent" }}
           >
             {fmt}
