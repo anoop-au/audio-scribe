@@ -40,11 +40,11 @@ function ConfidenceRing({ value }: { value: number }) {
       <circle cx="24" cy="24" r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth="4" opacity="0.3" />
       <motion.circle
         cx="24" cy="24" r={r} fill="none"
-        stroke="#00d9ff" strokeWidth="4" strokeLinecap="round"
+        stroke="#ff6a00" strokeWidth="4" strokeLinecap="round"
         strokeDasharray={circ} strokeDashoffset={circ}
         animate={{ strokeDashoffset: offset }}
         transition={{ duration: 1.2, delay: 0.6, ease: "easeOut" }}
-        style={{ filter: "drop-shadow(0 0 4px rgba(0, 217, 255, 0.5))" }}
+        style={{ filter: "drop-shadow(0 0 4px rgba(255, 106, 0, 0.5))" }}
       />
       <text
         x="24" y="24"
@@ -114,27 +114,27 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
         <div
           className="absolute inset-0 blur-2xl opacity-40 rounded-full scale-150"
           style={{
-            background: "radial-gradient(circle, rgba(0,217,255,0.5) 0%, rgba(16,185,129,0.4) 50%, transparent 80%)",
+            background: "radial-gradient(circle, rgba(255,106,0,0.5) 0%, rgba(255,45,146,0.3) 50%, transparent 80%)",
           }}
         />
         <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center relative z-10"
           style={{
-            background: "linear-gradient(135deg, rgba(0,217,255,0.15), rgba(16,185,129,0.15))",
-            border: "1px solid rgba(16,185,129,0.3)",
-            boxShadow: "0 0 30px rgba(0,217,255,0.2), 0 0 60px rgba(16,185,129,0.1)",
+            background: "linear-gradient(135deg, rgba(255,106,0,0.15), rgba(255,45,146,0.15))",
+            border: "1px solid rgba(255,106,0,0.3)",
+            boxShadow: "0 0 30px rgba(255,106,0,0.2), 0 0 60px rgba(255,45,146,0.1)",
           }}
         >
           <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
             <motion.path
               d="M10 20 L17 27 L30 13"
-              stroke="#10b981"
+              stroke="#ff6a00"
               strokeWidth="4"
               strokeLinecap="round"
               strokeLinejoin="round"
               initial={{ pathLength: 0 }}
               animate={{ pathLength: 1 }}
               transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-              style={{ filter: "drop-shadow(0 0 6px rgba(16,185,129,0.6))" }}
+              style={{ filter: "drop-shadow(0 0 6px rgba(255,106,0,0.6))" }}
             />
           </svg>
         </div>
@@ -186,7 +186,7 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
             className="max-h-64 overflow-y-auto text-sm leading-relaxed tracking-tight text-foreground/85 whitespace-pre-line pr-2"
             style={{
               scrollbarWidth: "thin",
-              scrollbarColor: "rgba(0,217,255,0.3) transparent",
+              scrollbarColor: "rgba(255,106,0,0.3) transparent",
             }}
           >
             {result.transcript}
@@ -208,9 +208,9 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
               }
             `}
             style={selectedFormat === fmt ? {
-              background: "linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,153,255,0.2))",
-              border: "1px solid rgba(0,212,255,0.4)",
-              boxShadow: "0 0 12px rgba(0,212,255,0.15)",
+              background: "linear-gradient(135deg, rgba(255,106,0,0.2), rgba(255,45,146,0.2))",
+              border: "1px solid rgba(255,106,0,0.4)",
+              boxShadow: "0 0 12px rgba(255,106,0,0.15)",
             } : { border: "1px solid transparent" }}
           >
             {fmt}
@@ -239,8 +239,8 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
               onClick={handleDownload}
               className="flex-1 gap-2 h-11 text-sm font-bold text-white border-0 hover:brightness-110 active:scale-[0.98] transition-all"
               style={{
-                background: "linear-gradient(135deg, #00d4ff 0%, #0099ff 100%)",
-                boxShadow: "0 4px 16px rgba(0,212,255,0.3)",
+                background: "linear-gradient(135deg, #ff6a00 0%, #ff2d92 100%)",
+                boxShadow: "0 4px 16px rgba(255,106,0,0.3)",
               }}
             >
               <Download className="w-4 h-4" /> Download {selectedFormat}
