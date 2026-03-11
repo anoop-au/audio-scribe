@@ -114,14 +114,14 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
         <div
           className="absolute inset-0 blur-2xl opacity-40 rounded-full scale-150"
           style={{
-            background: "radial-gradient(circle, rgba(0,217,255,0.5) 0%, rgba(16,185,129,0.4) 50%, transparent 80%)",
+            background: "radial-gradient(circle, rgba(255,106,0,0.5) 0%, rgba(255,45,146,0.3) 50%, transparent 80%)",
           }}
         />
         <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center relative z-10"
           style={{
-            background: "linear-gradient(135deg, rgba(0,217,255,0.15), rgba(16,185,129,0.15))",
-            border: "1px solid rgba(16,185,129,0.3)",
-            boxShadow: "0 0 30px rgba(0,217,255,0.2), 0 0 60px rgba(16,185,129,0.1)",
+            background: "linear-gradient(135deg, rgba(255,106,0,0.15), rgba(255,45,146,0.15))",
+            border: "1px solid rgba(255,106,0,0.3)",
+            boxShadow: "0 0 30px rgba(255,106,0,0.2), 0 0 60px rgba(255,45,146,0.1)",
           }}
         >
           <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
