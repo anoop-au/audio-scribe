@@ -40,11 +40,11 @@ function ConfidenceRing({ value }: { value: number }) {
       <circle cx="24" cy="24" r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth="4" opacity="0.3" />
       <motion.circle
         cx="24" cy="24" r={r} fill="none"
-        stroke="#00d9ff" strokeWidth="4" strokeLinecap="round"
+        stroke="#ff6a00" strokeWidth="4" strokeLinecap="round"
         strokeDasharray={circ} strokeDashoffset={circ}
         animate={{ strokeDashoffset: offset }}
         transition={{ duration: 1.2, delay: 0.6, ease: "easeOut" }}
-        style={{ filter: "drop-shadow(0 0 4px rgba(0, 217, 255, 0.5))" }}
+        style={{ filter: "drop-shadow(0 0 4px rgba(255, 106, 0, 0.5))" }}
       />
       <text
         x="24" y="24"
