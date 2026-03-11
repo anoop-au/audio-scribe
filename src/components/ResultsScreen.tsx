@@ -186,7 +186,7 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
             className="max-h-64 overflow-y-auto text-sm leading-relaxed tracking-tight text-foreground/85 whitespace-pre-line pr-2"
             style={{
               scrollbarWidth: "thin",
-              scrollbarColor: "rgba(0,217,255,0.3) transparent",
+              scrollbarColor: "rgba(255,106,0,0.3) transparent",
             }}
           >
             {result.transcript}
