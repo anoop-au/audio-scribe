@@ -62,7 +62,13 @@ export default function Index() {
             AI-Powered Transcription
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
-            <span className="text-gradient bg-gradient-to-r from-accent to-accent/60">Aurascribe</span>
+            <span
+              className="bg-clip-text text-transparent"
+              style={{
+                backgroundImage: "linear-gradient(135deg, #ff6a00 0%, #ff2d92 50%, #00d4ff 100%)",
+                filter: "drop-shadow(0 0 12px rgba(255,106,0,0.3))",
+              }}
+            >Aurascript</span>
           </h1>
           <p className="text-muted-foreground text-base max-w-md mx-auto">
             Upload audio or video and get accurate transcripts in seconds. Supports 50+ languages.
