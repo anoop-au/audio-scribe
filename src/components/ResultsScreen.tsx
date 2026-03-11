@@ -127,14 +127,14 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
           <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
             <motion.path
               d="M10 20 L17 27 L30 13"
-              stroke="#10b981"
+              stroke="#ff6a00"
               strokeWidth="4"
               strokeLinecap="round"
               strokeLinejoin="round"
               initial={{ pathLength: 0 }}
               animate={{ pathLength: 1 }}
               transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-              style={{ filter: "drop-shadow(0 0 6px rgba(16,185,129,0.6))" }}
+              style={{ filter: "drop-shadow(0 0 6px rgba(255,106,0,0.6))" }}
             />
           </svg>
         </div>
