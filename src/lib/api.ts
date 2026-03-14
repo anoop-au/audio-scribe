@@ -1,6 +1,7 @@
 import type { ProcessingOptions, TranscriptionResult } from "./mock";
 
-const WS_URL = import.meta.env.VITE_WS_URL ?? "ws://aurascript.store/ws/transcribe";
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://aurascript.store";
+const WS_BASE = import.meta.env.VITE_WS_URL ?? "ws://aurascript.store";
 
 export type StepEvent = {
   type: "step";
@@ -42,33 +43,44 @@ export async function transcribeFile(
   onEvent: (event: SSEEvent) => void,
   signal?: AbortSignal
 ): Promise<TranscriptionResult> {
-  return new Promise((resolve, reject) => {
-    const ws = new WebSocket(WS_URL);
+  // Step 1: Upload file and get job_id
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("output_format", options.outputFormat);
+  formData.append("translate_to_english", String(options.translateToEnglish));
+  if (options.languageHint) {
+    formData.append("language_hint", options.languageHint);
+  }
 
-    const cleanup = () => {
-      ws.close();
-    };
+  const uploadRes = await fetch(`${API_BASE}/api/upload`, {
+    method: "POST",
+    body: formData,
+    signal,
+  });
+
+  if (!uploadRes.ok) {
+    const text = await uploadRes.text();
+    throw new Error(`Upload failed (${uploadRes.status}): ${text}`);
+  }
+
+  const { job_id } = (await uploadRes.json()) as { job_id: string };
+
+  // Step 2: Connect to WebSocket for progress and results
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      return reject(new DOMException("Aborted", "AbortError"));
+    }
+
+    const ws = new WebSocket(`${WS_BASE}/ws/${job_id}`);
+
+    const cleanup = () => ws.close();
 
     if (signal) {
       signal.addEventListener("abort", () => {
         cleanup();
         reject(new DOMException("Aborted", "AbortError"));
-      });
+      }, { once: true });
     }
-
-    ws.onopen = async () => {
-      // Send metadata first as JSON
-      ws.send(JSON.stringify({
-        filename: file.name,
-        output_format: options.outputFormat,
-        translate_to_english: options.translateToEnglish,
-        language_hint: options.languageHint || undefined,
-      }));
-
-      // Then send the file as binary
-      const buffer = await file.arrayBuffer();
-      ws.send(buffer);
-    };
 
     ws.onmessage = (msg) => {
       let event: SSEEvent;
