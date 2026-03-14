@@ -1,6 +1,6 @@
 import type { ProcessingOptions, TranscriptionResult } from "./mock";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://172.105.187.21:8000";
+const WS_URL = import.meta.env.VITE_WS_URL ?? "ws://aurascript.store/ws/transcribe";
 
 export type StepEvent = {
   type: "step";
@@ -42,73 +42,71 @@ export async function transcribeFile(
   onEvent: (event: SSEEvent) => void,
   signal?: AbortSignal
 ): Promise<TranscriptionResult> {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("output_format", options.outputFormat);
-  formData.append("translate_to_english", String(options.translateToEnglish));
-  if (options.languageHint) {
-    formData.append("language_hint", options.languageHint);
-  }
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket(WS_URL);
 
-  const response = await fetch(`${API_BASE}/transcribe`, {
-    method: "POST",
-    body: formData,
-    signal,
-  });
+    const cleanup = () => {
+      ws.close();
+    };
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Server error ${response.status}: ${text}`);
-  }
+    if (signal) {
+      signal.addEventListener("abort", () => {
+        cleanup();
+        reject(new DOMException("Aborted", "AbortError"));
+      });
+    }
 
-  const reader = response.body!.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  let finalResult: TranscriptionResult | null = null;
+    ws.onopen = async () => {
+      // Send metadata first as JSON
+      ws.send(JSON.stringify({
+        filename: file.name,
+        output_format: options.outputFormat,
+        translate_to_english: options.translateToEnglish,
+        language_hint: options.languageHint || undefined,
+      }));
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+      // Then send the file as binary
+      const buffer = await file.arrayBuffer();
+      ws.send(buffer);
+    };
 
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-
-    for (const line of lines) {
-      if (!line.startsWith("data: ")) continue;
-      const raw = line.slice(6).trim();
-      if (!raw) continue;
-
+    ws.onmessage = (msg) => {
       let event: SSEEvent;
       try {
-        event = JSON.parse(raw);
+        event = JSON.parse(msg.data);
       } catch {
-        continue;
+        return;
       }
 
       onEvent(event);
 
       if (event.type === "error") {
-        throw new Error(event.message);
+        cleanup();
+        reject(new Error(event.message));
       }
 
       if (event.type === "complete") {
         const r = event.result;
-        finalResult = {
+        cleanup();
+        resolve({
           filename: r.filename,
           duration: r.duration,
           language: r.language,
           processingTime: "see server logs",
           wordCount: r.wordCount,
           transcript: r.transcript,
-        };
+        });
       }
-    }
-  }
+    };
 
-  if (!finalResult) {
-    throw new Error("No result received from server");
-  }
+    ws.onerror = () => {
+      reject(new Error("WebSocket connection failed"));
+    };
 
-  return finalResult;
+    ws.onclose = (e) => {
+      if (e.code !== 1000 && e.code !== 1005) {
+        reject(new Error(`WebSocket closed unexpectedly (${e.code})`));
+      }
+    };
+  });
 }
