@@ -71,6 +71,7 @@ export async function transcribeFile(
       return reject(new DOMException("Aborted", "AbortError"));
     }
 
+    console.log('WS connecting to:', `${WS_BASE}/ws/${job_id}`);
     const ws = new WebSocket(`${WS_BASE}/ws/${job_id}`);
 
     const cleanup = () => ws.close();
