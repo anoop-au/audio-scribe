@@ -83,6 +83,10 @@ export async function transcribeFile(
       }, { once: true });
     }
 
+    ws.onopen = () => {
+      console.log('WS opened');
+    };
+
     ws.onmessage = (msg) => {
       let event: SSEEvent;
       try {
