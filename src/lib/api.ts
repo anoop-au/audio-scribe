@@ -116,7 +116,8 @@ export async function transcribeFile(
       }
     };
 
-    ws.onerror = () => {
+    ws.onerror = (err) => {
+      console.log('WS error:', err);
       reject(new Error("WebSocket connection failed"));
     };
 
