@@ -71,6 +71,7 @@ export async function transcribeFile(
       return reject(new DOMException("Aborted", "AbortError"));
     }
 
+    console.log('WS connecting to:', `${WS_BASE}/ws/${job_id}`);
     const ws = new WebSocket(`${WS_BASE}/ws/${job_id}`);
 
     const cleanup = () => ws.close();
@@ -81,6 +82,10 @@ export async function transcribeFile(
         reject(new DOMException("Aborted", "AbortError"));
       }, { once: true });
     }
+
+    ws.onopen = () => {
+      console.log('WS opened');
+    };
 
     ws.onmessage = (msg) => {
       let event: SSEEvent;
@@ -111,7 +116,8 @@ export async function transcribeFile(
       }
     };
 
-    ws.onerror = () => {
+    ws.onerror = (err) => {
+      console.log('WS error:', err);
       reject(new Error("WebSocket connection failed"));
     };
 
