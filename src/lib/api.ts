@@ -7,7 +7,8 @@ import type {
 } from "@/types/aurascript";
 
 const API_KEY  = import.meta.env.VITE_API_KEY as string;
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) ?? "https://www.aurascript.au";
+const BASE_URL = (import.meta.env.VITE_API_URL as string) ?? "https://api.aurascript.au";
+const WS_BASE  = (import.meta.env.VITE_WS_URL as string) ?? "wss://api.aurascript.au";
 
 // Max enforced by backend — show friendly error above this
 export const MAX_FILE_BYTES = 700 * 1024 * 1024;
@@ -97,8 +98,7 @@ export async function cancelJob(jobId: string): Promise<void> {
 
 // ── WebSocket URL builder ─────────────────────────────────────────────────────
 export function buildWsUrl(jobId: string, lastSequence: number = 0): string {
-  const wsBase = BASE_URL.replace(/^https/, "wss").replace(/^http/, "ws");
-  const url = new URL(`${wsBase}/ws/transcribe/${jobId}`);
+  const url = new URL(`${WS_BASE}/ws/transcribe/${jobId}`);
   url.searchParams.set("token", API_KEY);
   if (lastSequence > 0) url.searchParams.set("last_sequence", String(lastSequence));
   return url.toString();
