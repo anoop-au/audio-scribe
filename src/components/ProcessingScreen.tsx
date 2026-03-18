@@ -62,7 +62,14 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
       wordCount: event.transcript.split(/\s+/).length,
       transcript: event.transcript,
     };
-    setTimeout(() => onComplete(result), 600);
+    const rawJobResult: JobResultResponse = {
+      job_id: event.job_id,
+      status: "completed",
+      transcript: event.transcript,
+      speaker_map: event.speaker_map,
+      metadata: event.metadata,
+    };
+    setTimeout(() => onComplete(result, rawJobResult), 600);
   }, [file.name, onComplete]);
 
   const handleFailed = useCallback((event: JobFailedEvent) => {
