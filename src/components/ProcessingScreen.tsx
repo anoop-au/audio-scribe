@@ -1,10 +1,12 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Check, Loader2, Clock, X, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { createInitialSteps, type ProcessingStep, type TranscriptionResult, type FileInfo, type ProcessingOptions } from "@/lib/mock";
-import { transcribeFile, type SSEEvent } from "@/lib/api";
+import { submitTranscription, cancelJob } from "@/lib/api";
+import { useTranscriptionSocket } from "@/hooks/useTranscriptionSocket";
+import type { JobCompleteEvent, JobFailedEvent } from "@/types/aurascript";
 
 interface ProcessingScreenProps {
   file: File;
@@ -22,91 +24,92 @@ const STEP_LABELS: Record<string, string> = {
   format: "Format",
 };
 
-const STEP_PROGRESS: Record<string, number> = {
-  analyze: 15,
-  chunk: 30,
-  transcribe: 80,
-  merge: 90,
-  format: 100,
-};
-
 export default function ProcessingScreen({ file, fileInfo, options, onComplete, onCancel }: ProcessingScreenProps) {
-  const [progress, setProgress] = useState(0);
   const [steps, setSteps] = useState<ProcessingStep[]>(createInitialSteps(1));
-  const [statusText, setStatusText] = useState("Connecting to server...");
   const [elapsed, setElapsed] = useState(0);
-  const [chunkTotal, setChunkTotal] = useState(0);
-  const [chunkStatuses, setChunkStatuses] = useState<Array<"pending" | "active" | "done">>([]);
   const [error, setError] = useState<string | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const jobIdRef = useRef<string | null>(null);
 
+  // Upload file and get job_id
+  useEffect(() => {
+    let cancelled = false;
+    submitTranscription(file, {
+      languageHint: options.languageHint,
+    })
+      .then((res) => {
+        if (!cancelled) {
+          setJobId(res.job_id);
+          jobIdRef.current = res.job_id;
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err.message ?? "Upload failed");
+        }
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleComplete = useCallback((event: JobCompleteEvent) => {
+    const result: TranscriptionResult = {
+      filename: file.name,
+      duration: `${Math.round(event.metadata.duration_seconds)}s`,
+      language: "auto",
+      processingTime: event.metadata.processing_time_seconds
+        ? `${Math.round(event.metadata.processing_time_seconds)}s`
+        : "N/A",
+      wordCount: event.transcript.split(/\s+/).length,
+      transcript: event.transcript,
+    };
+    setTimeout(() => onComplete(result), 600);
+  }, [file.name, onComplete]);
+
+  const handleFailed = useCallback((event: JobFailedEvent) => {
+    setError(event.error_message ?? "Transcription failed");
+  }, []);
+
+  const { state, socketStatus, cancel: cancelSocket } = useTranscriptionSocket({
+    jobId,
+    onComplete: handleComplete,
+    onFailed: handleFailed,
+  });
+
+  const progress = state.progress;
+  const statusText = error ? "Failed" : state.stage;
+
+  // Update steps based on progress
+  useEffect(() => {
+    if (state.chunkCount > 0) {
+      setSteps(createInitialSteps(state.chunkCount));
+    }
+
+    const stepMap: Record<string, number> = { analyze: 5, chunk: 12, transcribe: 87, merge: 97, format: 100 };
+    setSteps((prev) =>
+      prev.map((s) => ({
+        ...s,
+        status: progress >= stepMap[s.id]
+          ? "done" as const
+          : progress >= (stepMap[s.id] - 10)
+            ? "active" as const
+            : "pending" as const,
+      }))
+    );
+  }, [progress, state.chunkCount]);
+
+  // Elapsed timer
   useEffect(() => {
     const timer = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    const handleEvent = (event: SSEEvent) => {
-      if (event.type === "complete") {
-        // handled by transcribeFile promise resolution
-        return;
-      }
-
-      if (event.type === "step") {
-        updateStep(event.step, event.status === "active" ? "active" : "done");
-        if (event.status === "active") {
-          const labels: Record<string, string> = {
-            analyze: "Analyzing file...",
-            chunk: "Splitting into chunks...",
-            transcribe: "Transcribing audio...",
-            merge: "Merging results...",
-            format: "Finalizing transcript...",
-          };
-          setStatusText(labels[event.step] ?? `Processing: ${event.step}`);
-          setProgress((prev) => Math.max(prev, (STEP_PROGRESS[event.step] ?? 0) - 10));
-        } else {
-          setProgress((prev) => Math.max(prev, STEP_PROGRESS[event.step] ?? prev));
-        }
-      }
-
-      if (event.type === "chunk_progress") {
-        if (event.total !== chunkTotal) {
-          setChunkTotal(event.total);
-          setChunkStatuses(Array(event.total).fill("pending"));
-          setSteps(createInitialSteps(event.total));
-        }
-        setChunkStatuses((prev) => {
-          const next = [...prev];
-          // Mark previous chunk done, current active
-          if (event.index > 1) next[event.index - 2] = "done";
-          next[event.index - 1] = "active";
-          return next;
-        });
-        setStatusText(`Transcribing chunk ${event.index} of ${event.total}...`);
-        setProgress(30 + Math.round((event.index / event.total) * 50));
-      }
-    };
-
-    transcribeFile(file, options, handleEvent, controller.signal)
-      .then((result) => {
-        setProgress(100);
-        setStatusText("Done.");
-        setTimeout(() => onComplete(result), 600);
-      })
-      .catch((err: Error) => {
-        if (err.name === "AbortError") return;
-        setError(err.message ?? "An unexpected error occurred");
-      });
-
-    return () => { controller.abort(); };
-  }, []);
-
-  function updateStep(id: string, status: ProcessingStep["status"]) {
-    setSteps((prev) => prev.map((s) => (s.id === id ? { ...s, status } : s)));
-  }
+  const handleCancel = () => {
+    cancelSocket();
+    if (jobIdRef.current) {
+      cancelJob(jobIdRef.current).catch(() => {});
+    }
+    onCancel();
+  };
 
   const formatTime = (s: number) =>
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
@@ -212,25 +215,22 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
         </div>
       </div>
 
-      {/* Chunk log */}
-      {chunkStatuses.length > 0 && (
+      {/* Transcript Preview */}
+      {state.previewLines.length > 0 && (
         <div className="w-full max-w-md">
           <Accordion type="single" collapsible>
-            <AccordionItem value="log" className="border-none">
+            <AccordionItem value="preview" className="border-none">
               <div className="glassmorphism-card rounded-2xl overflow-hidden">
                 <AccordionTrigger className="text-sm text-muted-foreground hover:no-underline px-5 py-3">
-                  <span className="font-mono text-xs">Technical Log</span>
+                  <span className="font-mono text-xs">Live Preview ({state.chunksComplete}/{state.chunkCount} chunks)</span>
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="px-5 pb-4 space-y-1.5 max-h-48 overflow-y-auto">
-                    {chunkStatuses.map((status, i) => (
-                      <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: status === "pending" ? 0.3 : 1, x: 0 }}
-                        className="flex items-center justify-between py-1.5 px-3 rounded-lg font-mono text-xs">
-                        <span className="text-muted-foreground">Chunk #{String(i + 1).padStart(2, "0")}</span>
-                        <span className={`font-bold ${status === "done" ? "text-success" : status === "active" ? "text-accent" : "text-muted-foreground/30"}`}>
-                          {status === "done" ? "[SUCCESS]" : status === "active" ? "[PROCESSING...]" : "[PENDING]"}
-                        </span>
-                      </motion.div>
+                    {state.previewLines.map((line, i) => (
+                      <motion.p key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                        className="text-xs text-muted-foreground font-mono leading-relaxed">
+                        {line}
+                      </motion.p>
                     ))}
                   </div>
                 </AccordionContent>
@@ -242,7 +242,7 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
 
       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
         <Button variant="ghost" size="sm"
-          onClick={() => { abortRef.current?.abort(); onCancel(); }}
+          onClick={handleCancel}
           className="mt-2 px-6 font-mono text-xs text-destructive hover:text-destructive border border-destructive/30 hover:border-destructive/60 hover:bg-destructive/5 transition-all duration-300">
           <X className="w-3.5 h-3.5 mr-1.5" />Cancel
         </Button>
