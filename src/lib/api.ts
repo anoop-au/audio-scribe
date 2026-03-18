@@ -1,7 +1,8 @@
 import type { ProcessingOptions, TranscriptionResult } from "./mock";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "https://aurascript.store";
-const WS_BASE = import.meta.env.VITE_WS_URL ?? "wss://aurascript.store";
+const API_BASE = import.meta.env.VITE_API_URL ?? "https://www.aurascript.au";
+const WS_BASE = import.meta.env.VITE_WS_URL ?? "wss://www.aurascript.au";
+const API_KEY = import.meta.env.VITE_API_KEY ?? "";
 
 export type StepEvent = {
   type: "step";
