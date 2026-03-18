@@ -153,6 +153,9 @@ export default function Index() {
         <p className="text-center text-xs text-muted-foreground/60 mt-8 font-mono">
           Your files are processed securely and never stored
         </p>
+        <p className="text-center text-xs text-muted-foreground/40 mt-2 italic">
+          With love from Anoop
+        </p>
       </div>
     </div>
   );
