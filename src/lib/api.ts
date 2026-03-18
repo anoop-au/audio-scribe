@@ -1,131 +1,121 @@
-import type { ProcessingOptions, TranscriptionResult } from "./mock";
+import type {
+  TranscribeResponse,
+  TranscribeOptions,
+  JobStatusResponse,
+  JobResultResponse,
+  ApiError,
+} from "@/types/aurascript";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "https://www.aurascript.au";
-const WS_BASE = import.meta.env.VITE_WS_URL ?? "wss://www.aurascript.au";
-const API_KEY = import.meta.env.VITE_API_KEY ?? "";
+const API_KEY  = import.meta.env.VITE_API_KEY as string;
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) ?? "https://www.aurascript.au";
 
-export type StepEvent = {
-  type: "step";
-  step: string;
-  status: "active" | "done";
-  detail?: string;
-  total_chunks?: number;
-};
+// Max enforced by backend — show friendly error above this
+export const MAX_FILE_BYTES = 700 * 1024 * 1024;
 
-export type ChunkEvent = {
-  type: "chunk_progress";
-  index: number;
-  total: number;
-};
+export const ACCEPTED_MIME_TYPES = [
+  "audio/mpeg", "audio/mp3",
+  "audio/wav", "audio/x-wav",
+  "audio/mp4", "audio/m4a", "audio/x-m4a",
+  "audio/ogg",
+  "audio/flac", "audio/x-flac",
+  "audio/aac",
+  "audio/webm", "video/webm",
+];
 
-export type ErrorEvent = {
-  type: "error";
-  message: string;
-};
+export const ACCEPTED_EXTENSIONS = ".mp3,.wav,.m4a,.ogg,.flac,.aac,.webm";
 
-export type CompleteEvent = {
-  type: "complete";
-  result: {
-    filename: string;
-    duration: string;
-    language: string;
-    wordCount: number;
-    chunks: number;
-    transcript: string;
-    outputFormat: string;
+// ── Headers ───────────────────────────────────────────────────────────────────
+function authHeaders(): HeadersInit {
+  return { "X-Api-Key": API_KEY };
+}
+
+// ── Error helper ──────────────────────────────────────────────────────────────
+async function parseError(res: Response): Promise<ApiError> {
+  let body: Record<string, unknown> = {};
+  try { body = await res.json(); } catch { /* non-JSON body */ }
+  return {
+    status: res.status,
+    code: body.error_code as string | undefined,
+    message: (body.message as string | undefined) ?? res.statusText,
+    retryAfter: res.headers.get("Retry-After"),
+    requestId: res.headers.get("X-Request-ID"),
+    detail: body.detail as ApiError["detail"],
   };
-};
+}
 
-export type SSEEvent = StepEvent | ChunkEvent | ErrorEvent | CompleteEvent;
-
-export async function transcribeFile(
+// ── POST /transcribe ──────────────────────────────────────────────────────────
+export async function submitTranscription(
   file: File,
-  options: ProcessingOptions,
-  onEvent: (event: SSEEvent) => void,
-  signal?: AbortSignal
-): Promise<TranscriptionResult> {
-  // Step 1: Upload file and get job_id
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("output_format", options.outputFormat);
-  formData.append("translate_to_english", String(options.translateToEnglish));
-  if (options.languageHint) {
-    formData.append("language_hint", options.languageHint);
+  options: TranscribeOptions = {}
+): Promise<TranscribeResponse> {
+  if (file.size > MAX_FILE_BYTES) {
+    throw { status: 413, message: "File exceeds 700 MB limit.", code: "FILE_TOO_LARGE" } as ApiError;
   }
 
-  const uploadRes = await fetch(`${API_BASE}/api/upload`, {
+  const form = new FormData();
+  form.append("file", file);
+  if (options.languageHint)  form.append("language_hint", options.languageHint);
+  if (options.numSpeakers)   form.append("num_speakers", String(options.numSpeakers));
+  if (options.webhookUrl)    form.append("webhook_url", options.webhookUrl);
+
+  // Do NOT set Content-Type — browser must set multipart boundary
+  const res = await fetch(`${BASE_URL}/transcribe`, {
     method: "POST",
-    body: formData,
-    signal,
+    headers: authHeaders(),
+    body: form,
   });
 
-  if (!uploadRes.ok) {
-    const text = await uploadRes.text();
-    throw new Error(`Upload failed (${uploadRes.status}): ${text}`);
+  if (!res.ok) throw await parseError(res);
+  return res.json();
+}
+
+// ── GET /transcribe/status/{job_id} ──────────────────────────────────────────
+export async function getJobStatus(jobId: string): Promise<JobStatusResponse> {
+  const res = await fetch(`${BASE_URL}/transcribe/status/${jobId}`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw await parseError(res);
+  return res.json();
+}
+
+// ── GET /transcribe/result/{job_id} ──────────────────────────────────────────
+export async function getJobResult(jobId: string): Promise<JobResultResponse> {
+  const res = await fetch(`${BASE_URL}/transcribe/result/${jobId}`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw await parseError(res);
+  return res.json();
+}
+
+// ── DELETE /transcribe/{job_id} ───────────────────────────────────────────────
+export async function cancelJob(jobId: string): Promise<void> {
+  await fetch(`${BASE_URL}/transcribe/${jobId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+}
+
+// ── WebSocket URL builder ─────────────────────────────────────────────────────
+export function buildWsUrl(jobId: string, lastSequence: number = 0): string {
+  const wsBase = BASE_URL.replace(/^https/, "wss").replace(/^http/, "ws");
+  const url = new URL(`${wsBase}/ws/transcribe/${jobId}`);
+  url.searchParams.set("token", API_KEY);
+  if (lastSequence > 0) url.searchParams.set("last_sequence", String(lastSequence));
+  return url.toString();
+}
+
+// ── Fallback polling ──────────────────────────────────────────────────────────
+export async function pollUntilComplete(
+  jobId: string,
+  onUpdate: (s: JobStatusResponse) => void,
+  intervalMs = 3000
+): Promise<JobResultResponse> {
+  while (true) {
+    const status = await getJobStatus(jobId);
+    onUpdate(status);
+    if (status.status === "completed") return getJobResult(jobId);
+    if (status.status === "failed")    throw { status: 500, message: status.error_message ?? "Job failed", code: status.error_code } as ApiError;
+    if (status.status === "cancelled") throw { status: 400, message: "Job cancelled", code: "CANCELLED" } as ApiError;
+    await new Promise(r => setTimeout(r, intervalMs));
   }
-
-  const { job_id } = (await uploadRes.json()) as { job_id: string };
-
-  // Step 2: Connect to WebSocket for progress and results
-  return new Promise((resolve, reject) => {
-    if (signal?.aborted) {
-      return reject(new DOMException("Aborted", "AbortError"));
-    }
-
-    console.log('WS connecting to:', `${WS_BASE}/ws/${job_id}`);
-    const ws = new WebSocket(`${WS_BASE}/ws/${job_id}`);
-
-    const cleanup = () => ws.close();
-
-    if (signal) {
-      signal.addEventListener("abort", () => {
-        cleanup();
-        reject(new DOMException("Aborted", "AbortError"));
-      }, { once: true });
-    }
-
-    ws.onopen = () => {
-      console.log('WS opened');
-    };
-
-    ws.onmessage = (msg) => {
-      let event: SSEEvent;
-      try {
-        event = JSON.parse(msg.data);
-      } catch {
-        return;
-      }
-
-      onEvent(event);
-
-      if (event.type === "error") {
-        cleanup();
-        reject(new Error(event.message));
-      }
-
-      if (event.type === "complete") {
-        const r = event.result;
-        cleanup();
-        resolve({
-          filename: r.filename,
-          duration: r.duration,
-          language: r.language,
-          processingTime: "see server logs",
-          wordCount: r.wordCount,
-          transcript: r.transcript,
-        });
-      }
-    };
-
-    ws.onerror = (err) => {
-      console.log('WS error:', err);
-      reject(new Error("WebSocket connection failed"));
-    };
-
-    ws.onclose = (e) => {
-      if (e.code !== 1000 && e.code !== 1005) {
-        reject(new Error(`WebSocket closed unexpectedly (${e.code})`));
-      }
-    };
-  });
 }
