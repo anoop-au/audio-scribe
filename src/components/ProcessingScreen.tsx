@@ -6,7 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { createInitialSteps, type ProcessingStep, type TranscriptionResult, type FileInfo, type ProcessingOptions } from "@/lib/mock";
 import { submitTranscription, cancelJob } from "@/lib/api";
 import { useTranscriptionSocket } from "@/hooks/useTranscriptionSocket";
-import type { JobCompleteEvent, JobFailedEvent } from "@/types/aurascript";
+import type { JobCompleteEvent, JobFailedEvent, JobResultResponse } from "@/types/aurascript";
 
 interface ProcessingScreenProps {
   file: File;
