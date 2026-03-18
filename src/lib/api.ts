@@ -98,8 +98,7 @@ export async function cancelJob(jobId: string): Promise<void> {
 
 // ── WebSocket URL builder ─────────────────────────────────────────────────────
 export function buildWsUrl(jobId: string, lastSequence: number = 0): string {
-  const wsBase = BASE_URL.replace(/^https/, "wss").replace(/^http/, "ws");
-  const url = new URL(`${wsBase}/ws/transcribe/${jobId}`);
+  const url = new URL(`${WS_BASE}/ws/transcribe/${jobId}`);
   url.searchParams.set("token", API_KEY);
   if (lastSequence > 0) url.searchParams.set("last_sequence", String(lastSequence));
   return url.toString();
