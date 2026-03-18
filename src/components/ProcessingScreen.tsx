@@ -12,7 +12,7 @@ interface ProcessingScreenProps {
   file: File;
   fileInfo: FileInfo;
   options: ProcessingOptions;
-  onComplete: (result: TranscriptionResult) => void;
+  onComplete: (result: TranscriptionResult, jobResult?: JobResultResponse) => void;
   onCancel: () => void;
 }
 
