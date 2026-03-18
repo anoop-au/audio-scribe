@@ -4,9 +4,12 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { TranscriptionResult } from "@/lib/mock";
+import type { JobResultResponse } from "@/types/aurascript";
+import { useDownloads } from "@/hooks/useDownloads";
 
 interface ResultsScreenProps {
   result: TranscriptionResult;
+  jobResult?: JobResultResponse | null;
   onReset: () => void;
 }
 
@@ -58,25 +61,41 @@ function ConfidenceRing({ value }: { value: number }) {
   );
 }
 
-export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
+export default function ResultsScreen({ result, jobResult = null, onReset }: ResultsScreenProps) {
   const [selectedFormat, setSelectedFormat] = useState<string>("TXT");
   const [copied, setCopied] = useState(false);
+  const { downloadTxt, downloadDocx, downloadPdf, downloadJson, copyToClipboard } = useDownloads(jobResult);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(result.transcript);
+    if (jobResult) {
+      await copyToClipboard();
+    } else {
+      await navigator.clipboard.writeText(result.transcript);
+    }
     setCopied(true);
     toast.success("Copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDownload = () => {
-    const blob = new Blob([result.transcript], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${result.filename.replace(/\.[^.]+$/, "")}.${selectedFormat.toLowerCase()}`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (jobResult) {
+      // Use the proper download hooks for real results
+      switch (selectedFormat) {
+        case "TXT":  await downloadTxt(); break;
+        case "DOCX": await downloadDocx(); break;
+        case "PDF":  await downloadPdf(); break;
+        case "JSON": await downloadJson(); break;
+      }
+    } else {
+      // Fallback for mock/legacy results
+      const blob = new Blob([result.transcript], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${result.filename.replace(/\.[^.]+$/, "")}.${selectedFormat.toLowerCase()}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
     toast.success(`Downloaded as ${selectedFormat}`);
   };
 
@@ -103,14 +122,13 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
       animate="animate"
       className="flex flex-col items-center gap-6 sm:gap-8 pb-28 relative"
     >
-      {/* Step 1: Success Icon — Draw animation with radial glow */}
+      {/* Step 1: Success Icon */}
       <motion.div
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.1 }}
         className="relative"
       >
-        {/* Radial glow */}
         <div
           className="absolute inset-0 blur-2xl opacity-40 rounded-full scale-150"
           style={{
@@ -148,7 +166,7 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
         </p>
       </motion.div>
 
-      {/* Step 2: Intelligence Chips — Metadata grid */}
+      {/* Step 2: Intelligence Chips */}
       <motion.div {...slideRight(0.45)} className="w-full grid grid-cols-1 sm:grid-cols-4 gap-3">
         {metrics.map((m) => (
           <div
@@ -162,7 +180,6 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
             </div>
           </div>
         ))}
-        {/* Confidence chip with mini ring */}
         <div className="glassmorphism-card rounded-xl px-4 py-3 flex items-center gap-3 sm:col-span-4">
           <Target className="w-4 h-4 text-accent shrink-0" />
           <div className="flex-1 min-w-0">
@@ -175,13 +192,9 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
 
       {/* Step 3: Transcription Canvas */}
       <motion.div {...fadeUp(0.6)} className="w-full">
-        <div
-          className="glassmorphism-card rounded-2xl p-5 relative overflow-hidden"
-        >
-          {/* Inner shadow indicators */}
+        <div className="glassmorphism-card rounded-2xl p-5 relative overflow-hidden">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-8 z-10 bg-gradient-to-b from-card/80 to-transparent rounded-t-2xl" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 z-10 bg-gradient-to-t from-card/80 to-transparent rounded-b-2xl" />
-
           <div
             className="max-h-64 overflow-y-auto text-sm leading-relaxed tracking-tight text-foreground/85 whitespace-pre-line pr-2"
             style={{
@@ -234,7 +247,6 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
               boxShadow: "0 -8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}
           >
-            {/* Primary: Download */}
             <Button
               onClick={handleDownload}
               className="flex-1 gap-2 h-11 text-sm font-bold text-white border-0 hover:brightness-110 active:scale-[0.98] transition-all"
@@ -246,7 +258,6 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
               <Download className="w-4 h-4" /> Download {selectedFormat}
             </Button>
 
-            {/* Secondary: Copy */}
             <Button
               variant="outline"
               onClick={handleCopy}
@@ -274,7 +285,6 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
               )}
             </Button>
 
-            {/* Secondary: Share */}
             <Button
               variant="outline"
               onClick={handleShare}
@@ -288,7 +298,6 @@ export default function ResultsScreen({ result, onReset }: ResultsScreenProps) {
             </Button>
           </div>
 
-          {/* Step 5: Recovery — Start New */}
           <div className="flex justify-center mt-3">
             <motion.button
               whileHover={{

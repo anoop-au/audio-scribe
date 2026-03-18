@@ -6,13 +6,13 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { createInitialSteps, type ProcessingStep, type TranscriptionResult, type FileInfo, type ProcessingOptions } from "@/lib/mock";
 import { submitTranscription, cancelJob } from "@/lib/api";
 import { useTranscriptionSocket } from "@/hooks/useTranscriptionSocket";
-import type { JobCompleteEvent, JobFailedEvent } from "@/types/aurascript";
+import type { JobCompleteEvent, JobFailedEvent, JobResultResponse } from "@/types/aurascript";
 
 interface ProcessingScreenProps {
   file: File;
   fileInfo: FileInfo;
   options: ProcessingOptions;
-  onComplete: (result: TranscriptionResult) => void;
+  onComplete: (result: TranscriptionResult, jobResult?: JobResultResponse) => void;
   onCancel: () => void;
 }
 
@@ -62,7 +62,14 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
       wordCount: event.transcript.split(/\s+/).length,
       transcript: event.transcript,
     };
-    setTimeout(() => onComplete(result), 600);
+    const rawJobResult: JobResultResponse = {
+      job_id: event.job_id,
+      status: "completed",
+      transcript: event.transcript,
+      speaker_map: event.speaker_map,
+      metadata: event.metadata,
+    };
+    setTimeout(() => onComplete(result, rawJobResult), 600);
   }, [file.name, onComplete]);
 
   const handleFailed = useCallback((event: JobFailedEvent) => {

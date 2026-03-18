@@ -8,6 +8,7 @@ import ProcessingScreen from "@/components/ProcessingScreen";
 import ResultsScreen from "@/components/ResultsScreen";
 import ThemeToggle from "@/components/ThemeToggle";
 import type { FileInfo, ProcessingOptions as Options, TranscriptionResult } from "@/lib/mock";
+import type { JobResultResponse } from "@/types/aurascript";
 
 type AppState = "upload" | "processing" | "results";
 
@@ -21,6 +22,7 @@ export default function Index() {
     languageHint: "",
   });
   const [result, setResult] = useState<TranscriptionResult | null>(null);
+  const [jobResult, setJobResult] = useState<JobResultResponse | null>(null);
 
   const handleFileSelect = useCallback((_file: File, info: FileInfo) => {
     setFile(_file);
@@ -37,8 +39,9 @@ export default function Index() {
     setState("processing");
   };
 
-  const handleComplete = (r: TranscriptionResult) => {
+  const handleComplete = (r: TranscriptionResult, rawJobResult?: JobResultResponse) => {
     setResult(r);
+    if (rawJobResult) setJobResult(rawJobResult);
     setState("results");
   };
 
@@ -47,6 +50,7 @@ export default function Index() {
     setFile(null);
     setFileInfo(null);
     setResult(null);
+    setJobResult(null);
   };
 
   return (
@@ -93,7 +97,6 @@ export default function Index() {
                   onClear={handleClear}
                 />
 
-                {/* Quick Settings bar — always visible */}
                 <div className="glassmorphism-card rounded-2xl px-5 py-5">
                   <ProcessingOptions options={options} onChange={setOptions} />
                 </div>
@@ -140,7 +143,7 @@ export default function Index() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <ResultsScreen result={result} onReset={handleReset} />
+                <ResultsScreen result={result} jobResult={jobResult} onReset={handleReset} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -154,4 +157,3 @@ export default function Index() {
     </div>
   );
 }
-					

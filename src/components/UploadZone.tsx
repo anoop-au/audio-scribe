@@ -1,6 +1,8 @@
 import { useCallback, useState } from "react";
 import { Upload, FileAudio, FileVideo, X } from "lucide-react";
-import { ACCEPTED_EXTENSIONS, formatFileSize, estimateDuration, type FileInfo } from "@/lib/mock";
+import { formatFileSize, estimateDuration, type FileInfo } from "@/lib/mock";
+import { ACCEPTED_EXTENSIONS, ACCEPTED_MIME_TYPES, MAX_FILE_BYTES } from "@/lib/api";
+import { toast } from "sonner";
 
 interface UploadZoneProps {
   onFileSelect: (file: File, info: FileInfo) => void;
@@ -12,6 +14,16 @@ export default function UploadZone({ onFileSelect, selectedFile, onClear }: Uplo
   const [isDragging, setIsDragging] = useState(false);
 
   const handleFile = useCallback((file: File) => {
+    // Client-side validation
+    if (file.size > MAX_FILE_BYTES) {
+      toast.error("File exceeds 700 MB limit.");
+      return;
+    }
+    if (!ACCEPTED_MIME_TYPES.includes(file.type) && file.type !== "") {
+      toast.error("Unsupported file type. Please use MP3, WAV, M4A, OGG, FLAC, AAC, or WebM.");
+      return;
+    }
+
     const info: FileInfo = {
       name: file.name,
       size: file.size,
@@ -69,7 +81,7 @@ export default function UploadZone({ onFileSelect, selectedFile, onClear }: Uplo
             Drop your file here, or <span className="text-accent">browse</span>
           </p>
           <p className="text-xs text-muted-foreground/70 font-mono" style={{ letterSpacing: '1px' }}>
-            MP3 · WAV · M4A · OGG · MP4 · MOV · AVI
+            MP3 · WAV · M4A · OGG · FLAC · AAC · WEBM
           </p>
         </label>
       ) : (
