@@ -65,7 +65,7 @@ export default function Index() {
             <Wand2 className="w-3 h-3" />
             AI-Powered Transcription
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-2">
             <span
               className="bg-clip-text text-transparent"
               style={{
