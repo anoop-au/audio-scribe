@@ -81,7 +81,7 @@ export default function UploadZone({ onFileSelect, selectedFile, onClear }: Uplo
             Drop your file here, or <span className="text-accent">browse</span>
           </p>
           <p className="text-xs text-muted-foreground/70 font-mono" style={{ letterSpacing: '1px' }}>
-            MP3 · WAV · M4A · OGG · FLAC · AAC · WEBM
+            MP3 · WAV · M4A · OGG · FLAC · AAC · WEBM · MP4
           </p>
         </label>
       ) : (
