@@ -184,9 +184,13 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
           <Target className="w-4 h-4 text-accent shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Confidence</p>
-            <p className="text-sm font-semibold">High Accuracy</p>
+            <p className="text-sm font-semibold">
+              {jobResult?.metadata?.overall_confidence
+                ? ((jobResult.metadata.overall_confidence as number) > 0.8 ? "High Accuracy" : (jobResult.metadata.overall_confidence as number) > 0.6 ? "Medium Accuracy" : "Low Accuracy")
+                : "High Accuracy"}
+            </p>
           </div>
-          <ConfidenceRing value={98} />
+          <ConfidenceRing value={jobResult?.metadata?.overall_confidence ? Math.round((jobResult.metadata.overall_confidence as number) * 100) : 98} />
         </div>
       </motion.div>
 
