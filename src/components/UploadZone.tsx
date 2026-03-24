@@ -20,7 +20,7 @@ export default function UploadZone({ onFileSelect, selectedFile, onClear }: Uplo
       return;
     }
     if (!ACCEPTED_MIME_TYPES.includes(file.type) && file.type !== "") {
-      toast.error("Unsupported file type. Please use MP3, WAV, M4A, OGG, FLAC, AAC, or WebM.");
+      toast.error("Unsupported file type. Please use MP3, WAV, M4A, OGG, FLAC, AAC, WebM, or MP4.");
       return;
     }
 
@@ -81,7 +81,7 @@ export default function UploadZone({ onFileSelect, selectedFile, onClear }: Uplo
             Drop your file here, or <span className="text-accent">browse</span>
           </p>
           <p className="text-xs text-muted-foreground/70 font-mono" style={{ letterSpacing: '1px' }}>
-            MP3 · WAV · M4A · OGG · FLAC · AAC · WEBM
+            MP3 · WAV · M4A · OGG · FLAC · AAC · WEBM · MP4
           </p>
         </label>
       ) : (

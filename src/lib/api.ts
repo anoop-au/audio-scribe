@@ -20,9 +20,10 @@ export const ACCEPTED_MIME_TYPES = [
   "audio/flac", "audio/x-flac",
   "audio/aac",
   "audio/webm", "video/webm",
+  "video/mp4",
 ];
 
-export const ACCEPTED_EXTENSIONS = ".mp3,.wav,.m4a,.ogg,.flac,.aac,.webm";
+export const ACCEPTED_EXTENSIONS = ".mp3,.wav,.m4a,.ogg,.flac,.aac,.webm,.mp4";
 
 // ── Headers ───────────────────────────────────────────────────────────────────
 function authHeaders(): HeadersInit {
