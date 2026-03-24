@@ -55,7 +55,9 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
     const result: TranscriptionResult = {
       filename: file.name,
       duration: `${Math.round(event.metadata.duration_seconds)}s`,
-      language: "auto",
+      language: Array.isArray(event.metadata.languages_detected)
+        ? (event.metadata.languages_detected as string[]).join(", ")
+        : "auto",
       processingTime: event.metadata.processing_time_seconds
         ? `${Math.round(event.metadata.processing_time_seconds)}s`
         : "N/A",
