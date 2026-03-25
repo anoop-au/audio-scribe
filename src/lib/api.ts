@@ -6,20 +6,26 @@ import type {
   ApiError,
 } from "@/types/aurascript";
 
-const API_KEY  = import.meta.env.VITE_API_KEY as string;
+const API_KEY = import.meta.env.VITE_API_KEY as string;
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) ?? "https://www.aurascript.au";
 
 // Max enforced by backend — show friendly error above this
 export const MAX_FILE_BYTES = 700 * 1024 * 1024;
 
 export const ACCEPTED_MIME_TYPES = [
-  "audio/mpeg", "audio/mp3",
-  "audio/wav", "audio/x-wav",
-  "audio/mp4", "audio/m4a", "audio/x-m4a",
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/wav",
+  "audio/x-wav",
+  "audio/mp4",
+  "audio/m4a",
+  "audio/x-m4a",
   "audio/ogg",
-  "audio/flac", "audio/x-flac",
+  "audio/flac",
+  "audio/x-flac",
   "audio/aac",
-  "audio/webm", "video/webm",
+  "audio/webm",
+  "video/webm",
   "video/mp4",
 ];
 
@@ -33,7 +39,11 @@ function authHeaders(): HeadersInit {
 // ── Error helper ──────────────────────────────────────────────────────────────
 async function parseError(res: Response): Promise<ApiError> {
   let body: Record<string, unknown> = {};
-  try { body = await res.json(); } catch { /* non-JSON body */ }
+  try {
+    body = await res.json();
+  } catch {
+    /* non-JSON body */
+  }
   return {
     status: res.status,
     code: body.error_code as string | undefined,
@@ -45,19 +55,17 @@ async function parseError(res: Response): Promise<ApiError> {
 }
 
 // ── POST /transcribe ──────────────────────────────────────────────────────────
-export async function submitTranscription(
-  file: File,
-  options: TranscribeOptions = {}
-): Promise<TranscribeResponse> {
+export async function submitTranscription(file: File, options: TranscribeOptions = {}): Promise<TranscribeResponse> {
   if (file.size > MAX_FILE_BYTES) {
     throw { status: 413, message: "File exceeds 700 MB limit.", code: "FILE_TOO_LARGE" } as ApiError;
   }
 
   const form = new FormData();
   form.append("file", file);
-  if (options.languageHint)  form.append("language_hint", options.languageHint);
-  if (options.numSpeakers)   form.append("num_speakers", String(options.numSpeakers));
-  if (options.webhookUrl)    form.append("webhook_url", options.webhookUrl);
+  if (options.languageHint) form.append("language_hint", options.languageHint);
+  if (options.numSpeakers) form.append("num_speakers", String(options.numSpeakers));
+  if (options.webhookUrl) form.append("webhook_url", options.webhookUrl);
+  if (options.translateToEnglish) form.append("translate_to", "english");
 
   // Do NOT set Content-Type — browser must set multipart boundary
   const res = await fetch(`${BASE_URL}/transcribe`, {
@@ -109,14 +117,15 @@ export function buildWsUrl(jobId: string, lastSequence: number = 0): string {
 export async function pollUntilComplete(
   jobId: string,
   onUpdate: (s: JobStatusResponse) => void,
-  intervalMs = 3000
+  intervalMs = 3000,
 ): Promise<JobResultResponse> {
   while (true) {
     const status = await getJobStatus(jobId);
     onUpdate(status);
     if (status.status === "completed") return getJobResult(jobId);
-    if (status.status === "failed")    throw { status: 500, message: status.error_message ?? "Job failed", code: status.error_code } as ApiError;
+    if (status.status === "failed")
+      throw { status: 500, message: status.error_message ?? "Job failed", code: status.error_code } as ApiError;
     if (status.status === "cancelled") throw { status: 400, message: "Job cancelled", code: "CANCELLED" } as ApiError;
-    await new Promise(r => setTimeout(r, intervalMs));
+    await new Promise((r) => setTimeout(r, intervalMs));
   }
 }
