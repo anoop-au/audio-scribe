@@ -167,6 +167,7 @@ export interface TranscribeOptions {
   languageHint?: string;
   numSpeakers?: number;
   webhookUrl?: string;
+  translateToEnglish?: boolean;
 }
 
 // ── Processing state for ProcessingScreen ────────────────────────────────────
