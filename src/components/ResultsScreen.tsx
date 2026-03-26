@@ -226,6 +226,24 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
 
       {/* Step 3: Transcription Canvas */}
       <motion.div {...fadeUp(0.6)} className="w-full">
+        {translatedText && (
+          <div className="flex gap-2 mb-2">
+            <button
+              onClick={() => setShowTranslation(false)}
+              className={`px-3 py-1 rounded-full text-xs font-mono transition-all ${!showTranslation ? "text-accent" : "text-muted-foreground"}`}
+              style={!showTranslation ? { background: "rgba(255,106,0,0.15)", border: "1px solid rgba(255,106,0,0.3)" } : { border: "1px solid transparent" }}
+            >
+              Original
+            </button>
+            <button
+              onClick={() => setShowTranslation(true)}
+              className={`px-3 py-1 rounded-full text-xs font-mono transition-all ${showTranslation ? "text-accent" : "text-muted-foreground"}`}
+              style={showTranslation ? { background: "rgba(255,106,0,0.15)", border: "1px solid rgba(255,106,0,0.3)" } : { border: "1px solid transparent" }}
+            >
+              English Translation
+            </button>
+          </div>
+        )}
         <div className="glassmorphism-card rounded-2xl p-5 relative overflow-hidden">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-8 z-10 bg-gradient-to-b from-card/80 to-transparent rounded-t-2xl" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 z-10 bg-gradient-to-t from-card/80 to-transparent rounded-b-2xl" />
@@ -236,7 +254,7 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
               scrollbarColor: "rgba(255,106,0,0.3) transparent",
             }}
           >
-            {result.transcript}
+            {showTranslation && translatedText ? translatedText : result.transcript}
           </div>
         </div>
       </motion.div>
