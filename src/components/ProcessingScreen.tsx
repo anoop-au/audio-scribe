@@ -36,6 +36,7 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
     let cancelled = false;
     submitTranscription(file, {
       languageHint: options.languageHint,
+      translateToEnglish: options.translateToEnglish,
     })
       .then((res) => {
         if (!cancelled) {
