@@ -64,7 +64,37 @@ function ConfidenceRing({ value }: { value: number }) {
 export default function ResultsScreen({ result, jobResult = null, onReset }: ResultsScreenProps) {
   const [selectedFormat, setSelectedFormat] = useState<string>("TXT");
   const [copied, setCopied] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [showTranslation, setShowTranslation] = useState(false);
+  const [translatedText, setTranslatedText] = useState<string | null>(null);
   const { downloadTxt, downloadDocx, downloadPdf, downloadJson, copyToClipboard } = useDownloads(jobResult);
+
+  const handleTranslate = async () => {
+    if (translatedText) {
+      setShowTranslation(!showTranslation);
+      return;
+    }
+    setTranslating(true);
+    try {
+      const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) ?? "https://api.aurascript.au";
+      const API_KEY = import.meta.env.VITE_API_KEY as string;
+      const res = await fetch(`${API_BASE}/translate`, {
+        method: "POST",
+        headers: { "X-Api-Key": API_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ text: result.transcript, target_language: "english" }),
+      });
+      if (!res.ok) throw new Error(`Translation failed: ${res.statusText}`);
+      const data = await res.json();
+      setTranslatedText(data.translated_text ?? data.text ?? data.translation);
+      setShowTranslation(true);
+      toast.success("Translation complete");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Translation failed";
+      toast.error(msg);
+    } finally {
+      setTranslating(false);
+    }
+  };
 
   const handleCopy = async () => {
     if (jobResult) {

@@ -13,20 +13,6 @@ export default function ProcessingOptions({ options, onChange }: ProcessingOptio
   return (
     <div className="space-y-4">
       <p className="text-xs font-mono text-muted-foreground tracking-wider uppercase">Quick Settings</p>
-      <div className="flex items-center gap-3">
-        <Switch
-          id="translate"
-          checked={options.translateToEnglish}
-          onCheckedChange={(checked) =>
-            onChange({ ...options, translateToEnglish: checked })
-          }
-          className="data-[state=checked]:bg-accent"
-        />
-        <Label htmlFor="translate" className="text-sm cursor-pointer">
-          Translate to English
-        </Label>
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label className="text-xs text-muted-foreground font-mono">Output Format</Label>
