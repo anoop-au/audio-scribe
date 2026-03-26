@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Copy, Download, Share2, RotateCcw, FileText, Clock, Globe, Hash, Target } from "lucide-react";
+import { Check, Copy, Download, Share2, RotateCcw, FileText, Clock, Globe, Hash, Target, Languages, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
