@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Copy, Download, Share2, RotateCcw, FileText, Clock, Globe, Hash, Target } from "lucide-react";
+import { Check, Copy, Download, Share2, RotateCcw, FileText, Clock, Globe, Hash, Target, Languages, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -64,7 +64,37 @@ function ConfidenceRing({ value }: { value: number }) {
 export default function ResultsScreen({ result, jobResult = null, onReset }: ResultsScreenProps) {
   const [selectedFormat, setSelectedFormat] = useState<string>("TXT");
   const [copied, setCopied] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [showTranslation, setShowTranslation] = useState(false);
+  const [translatedText, setTranslatedText] = useState<string | null>(null);
   const { downloadTxt, downloadDocx, downloadPdf, downloadJson, copyToClipboard } = useDownloads(jobResult);
+
+  const handleTranslate = async () => {
+    if (translatedText) {
+      setShowTranslation(!showTranslation);
+      return;
+    }
+    setTranslating(true);
+    try {
+      const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) ?? "https://api.aurascript.au";
+      const API_KEY = import.meta.env.VITE_API_KEY as string;
+      const res = await fetch(`${API_BASE}/translate`, {
+        method: "POST",
+        headers: { "X-Api-Key": API_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ text: result.transcript, target_language: "english" }),
+      });
+      if (!res.ok) throw new Error(`Translation failed: ${res.statusText}`);
+      const data = await res.json();
+      setTranslatedText(data.translated_text ?? data.text ?? data.translation);
+      setShowTranslation(true);
+      toast.success("Translation complete");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Translation failed";
+      toast.error(msg);
+    } finally {
+      setTranslating(false);
+    }
+  };
 
   const handleCopy = async () => {
     if (jobResult) {
@@ -196,6 +226,24 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
 
       {/* Step 3: Transcription Canvas */}
       <motion.div {...fadeUp(0.6)} className="w-full">
+        {translatedText && (
+          <div className="flex gap-2 mb-2">
+            <button
+              onClick={() => setShowTranslation(false)}
+              className={`px-3 py-1 rounded-full text-xs font-mono transition-all ${!showTranslation ? "text-accent" : "text-muted-foreground"}`}
+              style={!showTranslation ? { background: "rgba(255,106,0,0.15)", border: "1px solid rgba(255,106,0,0.3)" } : { border: "1px solid transparent" }}
+            >
+              Original
+            </button>
+            <button
+              onClick={() => setShowTranslation(true)}
+              className={`px-3 py-1 rounded-full text-xs font-mono transition-all ${showTranslation ? "text-accent" : "text-muted-foreground"}`}
+              style={showTranslation ? { background: "rgba(255,106,0,0.15)", border: "1px solid rgba(255,106,0,0.3)" } : { border: "1px solid transparent" }}
+            >
+              English Translation
+            </button>
+          </div>
+        )}
         <div className="glassmorphism-card rounded-2xl p-5 relative overflow-hidden">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-8 z-10 bg-gradient-to-b from-card/80 to-transparent rounded-t-2xl" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 z-10 bg-gradient-to-t from-card/80 to-transparent rounded-b-2xl" />
@@ -206,7 +254,7 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
               scrollbarColor: "rgba(255,106,0,0.3) transparent",
             }}
           >
-            {result.transcript}
+            {showTranslation && translatedText ? translatedText : result.transcript}
           </div>
         </div>
       </motion.div>
@@ -299,6 +347,20 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
               }}
             >
               <Share2 className="w-4 h-4" /> Share
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={handleTranslate}
+              disabled={translating}
+              className="gap-2 h-11 font-mono text-xs"
+              style={{
+                background: showTranslation ? "rgba(255,106,0,0.15)" : "transparent",
+                border: showTranslation ? "1px solid rgba(255,106,0,0.3)" : "1px solid rgba(255,255,255,0.15)",
+              }}
+            >
+              {translating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Languages className="w-4 h-4" />}
+              {translating ? "Translating…" : showTranslation ? "Original" : "Translate"}
             </Button>
           </div>
 

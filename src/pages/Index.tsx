@@ -17,7 +17,6 @@ export default function Index() {
   const [file, setFile] = useState<File | null>(null);
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
   const [options, setOptions] = useState<Options>({
-    translateToEnglish: false,
     outputFormat: "transcript",
     languageHint: "",
   });
