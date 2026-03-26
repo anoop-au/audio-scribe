@@ -348,6 +348,20 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
             >
               <Share2 className="w-4 h-4" /> Share
             </Button>
+
+            <Button
+              variant="outline"
+              onClick={handleTranslate}
+              disabled={translating}
+              className="gap-2 h-11 font-mono text-xs"
+              style={{
+                background: showTranslation ? "rgba(255,106,0,0.15)" : "transparent",
+                border: showTranslation ? "1px solid rgba(255,106,0,0.3)" : "1px solid rgba(255,255,255,0.15)",
+              }}
+            >
+              {translating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Languages className="w-4 h-4" />}
+              {translating ? "Translating…" : showTranslation ? "Original" : "Translate"}
+            </Button>
           </div>
 
           <div className="flex justify-center mt-3">
