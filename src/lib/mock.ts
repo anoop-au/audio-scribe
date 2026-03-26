@@ -6,7 +6,7 @@ export interface FileInfo {
 }
 
 export interface ProcessingOptions {
-  translateToEnglish: boolean;
+  translateToEnglish?: boolean;
   outputFormat: "transcript" | "summary" | "keypoints" | "srt";
   languageHint: string;
 }
