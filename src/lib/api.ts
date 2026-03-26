@@ -60,12 +60,17 @@ export async function submitTranscription(file: File, options: TranscribeOptions
     throw { status: 413, message: "File exceeds 700 MB limit.", code: "FILE_TOO_LARGE" } as ApiError;
   }
 
+  console.log("[api] submitTranscription options:", JSON.stringify(options));
+
   const form = new FormData();
   form.append("file", file);
   if (options.languageHint) form.append("language_hint", options.languageHint);
   if (options.numSpeakers) form.append("num_speakers", String(options.numSpeakers));
   if (options.webhookUrl) form.append("webhook_url", options.webhookUrl);
-  if (options.translateToEnglish) form.append("translate_to", "english");
+  if (options.translateToEnglish) {
+    form.append("translate_to", "english");
+    console.log("[api] translate_to field appended: english");
+  }
 
   // Do NOT set Content-Type — browser must set multipart boundary
   const res = await fetch(`${BASE_URL}/transcribe`, {
