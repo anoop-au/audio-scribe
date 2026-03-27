@@ -203,40 +203,71 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
       {/* Steps */}
       <div className="w-full max-w-md px-2">
         <div className="flex items-center justify-between">
-          {steps.map((step, i) => (
-            <div key={step.id} className="flex items-center flex-1 last:flex-none">
-              <div className="flex flex-col items-center gap-1.5">
-                <motion.div
-                  className="relative flex items-center justify-center"
-                  animate={step.status === "active" ? { boxShadow: ["0 0 0px rgba(0,217,255,0.4)", "0 0 16px rgba(0,217,255,0.6)", "0 0 0px rgba(0,217,255,0.4)"] } : {}}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  style={{ borderRadius: "50%" }}
-                >
-                  <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-mono font-bold transition-all duration-300 ${
-                    step.status === "done" ? "bg-success text-success-foreground shadow-[0_0_12px_rgba(16,185,129,0.4)]"
-                    : step.status === "active" ? "bg-accent/20 text-accent border-2 border-accent"
-                    : "bg-muted/50 text-muted-foreground/40 border border-border/50"
-                  }`}>
-                    {step.status === "done" ? (
-                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
-                        <Check className="w-4 h-4" />
-                      </motion.div>
-                    ) : step.status === "active" ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : <span>{i + 1}</span>}
+          {steps.map((step, i) => {
+            const stepRanges: Record<string, [number, number]> = {
+              analyze: [0, 5], chunk: [5, 12], transcribe: [12, 87], merge: [87, 97], format: [97, 100],
+            };
+            const [start, end] = stepRanges[step.id] || [0, 100];
+            const stepProgress = step.status === "done" ? 1
+              : step.status === "active" ? Math.min(1, Math.max(0, (progress - start) / (end - start)))
+              : 0;
+            const iconSize = 36;
+            const strokeW = 2.5;
+            const r = (iconSize - strokeW) / 2;
+            const circ = 2 * Math.PI * r;
+            const dashOffset = circ - stepProgress * circ;
+
+            return (
+              <div key={step.id} className="flex items-center flex-1 last:flex-none">
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="relative flex items-center justify-center" style={{ width: iconSize, height: iconSize }}>
+                    {/* Border fill SVG */}
+                    <svg width={iconSize} height={iconSize} className="absolute inset-0 -rotate-90 z-10">
+                      {/* Track */}
+                      <circle cx={iconSize / 2} cy={iconSize / 2} r={r} fill="none"
+                        stroke="hsl(var(--border))" strokeWidth={strokeW} opacity={0.3} />
+                      {/* Fill */}
+                      {(step.status === "active" || step.status === "done") && (
+                        <circle cx={iconSize / 2} cy={iconSize / 2} r={r} fill="none"
+                          stroke={step.status === "done" ? "hsl(var(--success))" : "url(#stepGradient)"}
+                          strokeWidth={strokeW} strokeLinecap="round"
+                          strokeDasharray={circ} strokeDashoffset={dashOffset}
+                          className="transition-all duration-700 ease-out" />
+                      )}
+                      <defs>
+                        <linearGradient id="stepGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#ff6a00" />
+                          <stop offset="100%" stopColor="#00d4ff" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    {/* Inner circle */}
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-mono font-bold transition-all duration-300 z-20 ${
+                      step.status === "done" ? "bg-success text-success-foreground"
+                      : step.status === "active" ? "bg-accent/15 text-accent"
+                      : "bg-muted/50 text-muted-foreground/40"
+                    }`}>
+                      {step.status === "done" ? (
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
+                          <Check className="w-4 h-4" />
+                        </motion.div>
+                      ) : step.status === "active" ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : <span>{i + 1}</span>}
+                    </div>
                   </div>
-                </motion.div>
-                <span className={`text-[10px] sm:text-xs font-medium transition-colors duration-200 ${
-                  step.status === "done" ? "text-success" : step.status === "active" ? "text-accent" : "text-muted-foreground/40"
-                }`}>{STEP_LABELS[step.id]}</span>
-              </div>
-              {i < steps.length - 1 && (
-                <div className="flex-1 h-px mx-1.5 sm:mx-2 mt-[-18px]">
-                  <div className={`h-full transition-all duration-500 ${step.status === "done" ? "bg-success/60" : "bg-border/40"}`} />
+                  <span className={`text-[10px] sm:text-xs font-medium transition-colors duration-200 ${
+                    step.status === "done" ? "text-success" : step.status === "active" ? "text-accent" : "text-muted-foreground/40"
+                  }`}>{STEP_LABELS[step.id]}</span>
                 </div>
-              )}
-            </div>
-          ))}
+                {i < steps.length - 1 && (
+                  <div className="flex-1 h-px mx-1.5 sm:mx-2 mt-[-18px]">
+                    <div className={`h-full transition-all duration-500 ${step.status === "done" ? "bg-success/60" : "bg-border/40"}`} />
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
