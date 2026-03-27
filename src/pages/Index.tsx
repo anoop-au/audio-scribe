@@ -64,15 +64,41 @@ export default function Index() {
             <Wand2 className="w-3 h-3" />
             AI-Powered Transcription
           </div>
-          <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-2">
-            <span
-              className="bg-clip-text text-transparent"
+          <motion.h1
+            className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-2 relative"
+            initial={{ opacity: 0.5, filter: "blur(10px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <motion.span
+              className="relative inline-block bg-clip-text text-transparent"
               style={{
-                backgroundImage: "linear-gradient(135deg, #ff6a00 0%, #ff2d92 50%, #00d4ff 100%)",
-                filter: "drop-shadow(0 0 12px rgba(255,106,0,0.3))",
+                backgroundImage: "linear-gradient(135deg, #4338ca 0%, #6366f1 30%, #00d4ff 70%, #22d3ee 100%)",
+                textShadow: "0 0 20px rgba(99,102,241,0.6), 0 0 40px rgba(0,212,255,0.4), 0 0 80px rgba(34,211,238,0.2)",
+                WebkitTextStroke: "0px",
               }}
-            >Aurascript</span>
-          </h1>
+              animate={{
+                textShadow: [
+                  "0 0 20px rgba(99,102,241,0.5), 0 0 40px rgba(0,212,255,0.3), 0 0 60px rgba(34,211,238,0.15)",
+                  "0 0 28px rgba(99,102,241,0.7), 0 0 56px rgba(0,212,255,0.45), 0 0 80px rgba(34,211,238,0.25)",
+                  "0 0 20px rgba(99,102,241,0.5), 0 0 40px rgba(0,212,255,0.3), 0 0 60px rgba(34,211,238,0.15)",
+                ]
+              }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            >
+              Aurascript
+              {/* Outer aura glow layer */}
+              <span
+                aria-hidden="true"
+                className="absolute inset-0 -z-10 pointer-events-none"
+                style={{
+                  background: "radial-gradient(ellipse at center, rgba(99,102,241,0.35) 0%, rgba(0,212,255,0.2) 40%, transparent 70%)",
+                  filter: "blur(50px)",
+                  transform: "scale(1.8, 2.5)",
+                }}
+              />
+            </motion.span>
+          </motion.h1>
           <p className="text-muted-foreground text-base max-w-md mx-auto">
             Upload audio or video and get accurate transcripts in seconds. Supports 50+ languages.
           </p>
