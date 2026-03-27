@@ -237,14 +237,30 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
             </button>
           </div>
         )}
-        <div className="glassmorphism-card rounded-2xl p-5 relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-8 z-10 bg-gradient-to-b from-card/80 to-transparent rounded-t-2xl" />
+        <div
+          className="glassmorphism-card rounded-2xl p-5 relative overflow-hidden"
+          style={{
+            background: "linear-gradient(180deg, rgba(255,106,0,0.06) 0%, rgba(255,255,255,0.02) 30%, rgba(0,0,0,0) 100%)",
+            boxShadow: "inset 0 1px 0 rgba(255,106,0,0.12), inset 0 8px 24px -8px rgba(255,106,0,0.08), 0 0 32px -8px rgba(255,106,0,0.06)",
+          }}
+        >
+          {/* Top glow overlay */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-20 z-10 rounded-t-2xl"
+            style={{
+              background: "linear-gradient(180deg, rgba(255,106,0,0.07) 0%, rgba(255,106,0,0.02) 40%, transparent 100%)",
+            }}
+          />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 z-10 bg-gradient-to-t from-card/80 to-transparent rounded-b-2xl" />
           <div
-            className="max-h-64 overflow-y-auto text-sm leading-relaxed tracking-tight text-foreground/85 whitespace-pre-line pr-2"
+            className="max-h-64 overflow-y-auto text-sm leading-relaxed tracking-tight whitespace-pre-line pr-2 relative z-20"
             style={{
               scrollbarWidth: "thin",
               scrollbarColor: "rgba(255,106,0,0.3) transparent",
+              background: "linear-gradient(180deg, hsl(var(--foreground) / 0.95) 0%, hsl(var(--foreground) / 0.75) 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
             }}
           >
             {showTranslation && translatedText ? translatedText : result.transcript}
