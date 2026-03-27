@@ -73,15 +73,15 @@ export default function Index() {
             <motion.span
               className="relative inline-block bg-clip-text text-transparent"
               style={{
-                backgroundImage: "linear-gradient(135deg, #4338ca 0%, #6366f1 30%, #00d4ff 70%, #22d3ee 100%)",
-                textShadow: "0 0 20px rgba(99,102,241,0.6), 0 0 40px rgba(0,212,255,0.4), 0 0 80px rgba(34,211,238,0.2)",
+                backgroundImage: "linear-gradient(135deg, #ff6a00 0%, #ff2d92 50%, #00d4ff 100%)",
+                textShadow: "0 0 20px rgba(255,106,0,0.6), 0 0 40px rgba(255,45,146,0.4), 0 0 80px rgba(0,212,255,0.2)",
                 WebkitTextStroke: "0px",
               }}
               animate={{
                 textShadow: [
-                  "0 0 20px rgba(99,102,241,0.5), 0 0 40px rgba(0,212,255,0.3), 0 0 60px rgba(34,211,238,0.15)",
-                  "0 0 28px rgba(99,102,241,0.7), 0 0 56px rgba(0,212,255,0.45), 0 0 80px rgba(34,211,238,0.25)",
-                  "0 0 20px rgba(99,102,241,0.5), 0 0 40px rgba(0,212,255,0.3), 0 0 60px rgba(34,211,238,0.15)",
+                  "0 0 20px rgba(255,106,0,0.5), 0 0 40px rgba(255,45,146,0.3), 0 0 60px rgba(0,212,255,0.15)",
+                  "0 0 28px rgba(255,106,0,0.7), 0 0 56px rgba(255,45,146,0.45), 0 0 80px rgba(0,212,255,0.25)",
+                  "0 0 20px rgba(255,106,0,0.5), 0 0 40px rgba(255,45,146,0.3), 0 0 60px rgba(0,212,255,0.15)",
                 ]
               }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -92,7 +92,7 @@ export default function Index() {
                 aria-hidden="true"
                 className="absolute inset-0 -z-10 pointer-events-none"
                 style={{
-                  background: "radial-gradient(ellipse at center, rgba(99,102,241,0.35) 0%, rgba(0,212,255,0.2) 40%, transparent 70%)",
+                  background: "radial-gradient(ellipse at center, rgba(255,106,0,0.35) 0%, rgba(255,45,146,0.2) 40%, transparent 70%)",
                   filter: "blur(50px)",
                   transform: "scale(1.8, 2.5)",
                 }}
