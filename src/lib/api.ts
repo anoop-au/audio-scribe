@@ -109,6 +109,21 @@ export async function cancelJob(jobId: string): Promise<void> {
   });
 }
 
+// ── POST /translate ────────────────────────────────────────────────────────────
+export async function translateTranscript(transcript: string): Promise<{ translation: string }> {
+  const form = new FormData();
+  form.append("transcript", transcript);
+
+  const res = await fetch(`${BASE_URL}/translate`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: form,
+  });
+
+  if (!res.ok) throw await parseError(res);
+  return res.json();
+}
+
 // ── WebSocket URL builder ─────────────────────────────────────────────────────
 export function buildWsUrl(jobId: string, lastSequence: number = 0): string {
   const wsBase = BASE_URL.replace(/^https/, "wss").replace(/^http/, "ws");
