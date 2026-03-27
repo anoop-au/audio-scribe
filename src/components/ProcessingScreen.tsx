@@ -289,7 +289,7 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
         <div className="w-full max-w-md">
           <Accordion type="single" collapsible>
             <AccordionItem value="preview" className="border-none">
-              <div className="glassmorphism-card rounded-2xl overflow-hidden">
+              <div className="glassmorphism-card glassmorphism-card-processing rounded-2xl overflow-hidden">
                 <AccordionTrigger className="text-sm text-muted-foreground hover:no-underline px-5 py-3">
                   <span className="font-mono text-xs">Live Preview ({state.chunksComplete}/{state.chunkCount} chunks)</span>
                 </AccordionTrigger>
