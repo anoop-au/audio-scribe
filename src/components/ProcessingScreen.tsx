@@ -86,7 +86,19 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
   });
 
   const progress = state.progress;
-  const statusText = error ? "Failed" : state.stage;
+  const statusText = useMemo(() => {
+    if (error) return "Failed";
+    if (progress >= 97) return "Finalizing...";
+    if (progress >= 87) return "Merging transcript...";
+    if (progress >= 12) {
+      return state.chunksComplete > 0 && state.chunkCount > 0
+        ? `Transcribing chunk ${state.chunksComplete} of ${state.chunkCount}...`
+        : "Transcribing audio...";
+    }
+    if (progress >= 5) return "Splitting into segments...";
+    if (progress >= 2) return "Analyzing audio...";
+    return "Waiting...";
+  }, [error, progress, state.chunksComplete, state.chunkCount]);
 
   // Update steps based on progress
   useEffect(() => {
