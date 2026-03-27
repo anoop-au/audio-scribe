@@ -95,9 +95,11 @@ export default function UploadZone({ onFileSelect, selectedFile, onClear }: Uplo
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-sm truncate">{selectedFile.name}</p>
-            <p className="text-xs text-muted-foreground font-mono">
-              {formatFileSize(selectedFile.size)} · {selectedFile.estimatedDuration} · <span className="uppercase text-accent/80">{selectedFile.name.split('.').pop()}</span>
-            </p>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-accent/10 text-[11px] font-mono font-medium text-accent tracking-wide">
+                {formatFileSize(selectedFile.size)} <span className="text-accent/40">|</span> <span className="uppercase">{selectedFile.name.split('.').pop()}</span> <span className="text-accent/40">|</span> {selectedFile.estimatedDuration}
+              </span>
+            </div>
           </div>
           <button
             onClick={onClear}
