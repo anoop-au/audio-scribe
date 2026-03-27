@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import type { TranscriptionResult } from "@/lib/mock";
 import type { JobResultResponse } from "@/types/aurascript";
 import { useDownloads } from "@/hooks/useDownloads";
+import { translateTranscript } from "@/lib/api";
 
 interface ResultsScreenProps {
   result: TranscriptionResult;
@@ -76,16 +77,8 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
     }
     setTranslating(true);
     try {
-      const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) ?? "https://api.aurascript.au";
-      const API_KEY = import.meta.env.VITE_API_KEY as string;
-      const res = await fetch(`${API_BASE}/translate`, {
-        method: "POST",
-        headers: { "X-Api-Key": API_KEY, "Content-Type": "application/json" },
-        body: JSON.stringify({ text: result.transcript, target_language: "english" }),
-      });
-      if (!res.ok) throw new Error(`Translation failed: ${res.statusText}`);
-      const data = await res.json();
-      setTranslatedText(data.translated_text ?? data.text ?? data.translation);
+      const data = await translateTranscript(result.transcript);
+      setTranslatedText(data.translation);
       setShowTranslation(true);
       toast.success("Translation complete");
     } catch (err: unknown) {
