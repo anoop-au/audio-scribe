@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import type { TranscriptionResult } from "@/lib/mock";
 import type { JobResultResponse } from "@/types/aurascript";
 import { useDownloads } from "@/hooks/useDownloads";
+import { translateTranscript } from "@/lib/api";
 
 interface ResultsScreenProps {
   result: TranscriptionResult;
