@@ -196,7 +196,7 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
         <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground font-mono">
           <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{formatTime(elapsed)}</span>
           <span className="text-muted-foreground/50">·</span>
-          <span>~{formatTime(estimatedRemaining)} remaining</span>
+          <span>~{estimatedRemaining !== null ? formatTime(estimatedRemaining) : "--:--"} remaining</span>
         </div>
       </motion.div>
 
