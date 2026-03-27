@@ -97,8 +97,9 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
     }
     if (progress >= 5) return "Splitting into segments...";
     if (progress >= 2) return "Analyzing audio...";
-    return "Waiting...";
-  }, [error, progress, state.chunksComplete, state.chunkCount]);
+    if (jobId) return "Analyzing audio...";
+    return "Uploading file...";
+  }, [error, progress, state.chunksComplete, state.chunkCount, jobId]);
 
   // Update steps based on progress
   useEffect(() => {
