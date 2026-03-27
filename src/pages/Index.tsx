@@ -73,7 +73,7 @@ export default function Index() {
             <motion.span
               className="relative inline-block bg-clip-text text-transparent"
               style={{
-                backgroundImage: "linear-gradient(135deg, #ff6a00 0%, #ff2d92 50%, #00d4ff 100%)",
+                backgroundImage: "linear-gradient(135deg, #ff6a00 0%, #ff2d92 50%, #1e90ff 100%)",
                 textShadow: "0 0 20px rgba(255,106,0,0.6), 0 0 40px rgba(255,45,146,0.4), 0 0 80px rgba(0,212,255,0.2)",
                 WebkitTextStroke: "0px",
               }}
