@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { Check, Loader2, Clock, X, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -124,7 +124,22 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
   const formatTime = (s: number) =>
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
-  const estimatedRemaining = Math.max(0, Math.round(((100 - progress) / Math.max(progress, 1)) * elapsed));
+  const estimatedTotalRef = useRef<number | null>(null);
+  const estimatedRemaining = useMemo(() => {
+    if (progress >= 100) return 0;
+    if (progress > 5 && elapsed > 0) {
+      const rate = progress / elapsed; // percent per second
+      const totalEstimate = Math.round(100 / rate);
+      // Lock in the first meaningful estimate, then only allow it to decrease
+      if (estimatedTotalRef.current === null) {
+        estimatedTotalRef.current = totalEstimate;
+      } else {
+        estimatedTotalRef.current = Math.min(estimatedTotalRef.current, totalEstimate);
+      }
+      return Math.max(0, estimatedTotalRef.current - elapsed);
+    }
+    return null; // not enough data yet
+  }, [progress, elapsed]);
   const ringSize = typeof window !== "undefined" && window.innerWidth < 768 ? 160 : 200;
   const ringRadius = ringSize / 2 - 16;
   const circumference = 2 * Math.PI * ringRadius;
@@ -181,7 +196,7 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
         <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground font-mono">
           <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{formatTime(elapsed)}</span>
           <span className="text-muted-foreground/50">·</span>
-          <span>~{formatTime(estimatedRemaining)} remaining</span>
+          <span>~{estimatedRemaining !== null ? formatTime(estimatedRemaining) : "--:--"} remaining</span>
         </div>
       </motion.div>
 
