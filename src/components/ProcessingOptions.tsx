@@ -18,8 +18,8 @@ export default function ProcessingOptions({ options, onChange }: ProcessingOptio
   return (
     <div className="grid grid-cols-2 gap-3">
       {/* Output Format — orange aura */}
-      <div className="glassmorphism-card glassmorphism-card--orange rounded-2xl px-5 py-5 space-y-2.5">
-        <Label className="text-[10px] text-muted-foreground/60 font-mono tracking-[0.15em] uppercase">Output Format</Label>
+      <div className="glassmorphism-card glassmorphism-card--orange rounded-2xl px-5 py-5 space-y-3">
+        <Label className="text-[10px] text-muted-foreground/60 font-mono tracking-[0.15em] uppercase block">Output Format</Label>
         <div className="flex rounded-xl bg-background/30 p-1 gap-0.5">
           {FORMAT_OPTIONS.map((opt) => (
             <button
