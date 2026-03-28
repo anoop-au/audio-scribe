@@ -30,11 +30,13 @@ export function useTranscriptionSocket({
   const reconnectAttemptsRef = useRef(0);
   const isMountedRef       = useRef(true);
 
-  const connect = useCallback(() => {
+  const connect = useCallback(async () => {
     if (!jobId || !isMountedRef.current) return;
 
     setSocketStatus(reconnectAttemptsRef.current > 0 ? "reconnecting" : "connecting");
-    const ws = new WebSocket(buildWsUrl(jobId, lastSequenceRef.current));
+    const wsUrl = await buildWsUrl(jobId, lastSequenceRef.current);
+    if (!isMountedRef.current) return;
+    const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {

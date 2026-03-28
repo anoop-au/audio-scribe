@@ -5,8 +5,8 @@ import type {
   JobResultResponse,
   ApiError,
 } from "@/types/aurascript";
+import { supabase } from "@/integrations/supabase/client";
 
-const API_KEY = import.meta.env.VITE_API_KEY as string;
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) ?? "https://www.aurascript.au";
 
 // Max enforced by backend — show friendly error above this
@@ -32,8 +32,13 @@ export const ACCEPTED_MIME_TYPES = [
 export const ACCEPTED_EXTENSIONS = ".mp3,.wav,.m4a,.ogg,.flac,.aac,.webm,.mp4";
 
 // ── Headers ───────────────────────────────────────────────────────────────────
-function authHeaders(): HeadersInit {
-  return { "X-Api-Key": API_KEY };
+async function authHeaders(): Promise<HeadersInit> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const headers: Record<string, string> = {};
+  if (session?.access_token) {
+    headers["Authorization"] = `Bearer ${session.access_token}`;
+  }
+  return headers;
 }
 
 // ── Error helper ──────────────────────────────────────────────────────────────
@@ -75,7 +80,7 @@ export async function submitTranscription(file: File, options: TranscribeOptions
   // Do NOT set Content-Type — browser must set multipart boundary
   const res = await fetch(`${BASE_URL}/transcribe`, {
     method: "POST",
-    headers: authHeaders(),
+    headers: await authHeaders(),
     body: form,
   });
 
@@ -86,7 +91,7 @@ export async function submitTranscription(file: File, options: TranscribeOptions
 // ── GET /transcribe/status/{job_id} ──────────────────────────────────────────
 export async function getJobStatus(jobId: string): Promise<JobStatusResponse> {
   const res = await fetch(`${BASE_URL}/transcribe/status/${jobId}`, {
-    headers: authHeaders(),
+    headers: await authHeaders(),
   });
   if (!res.ok) throw await parseError(res);
   return res.json();
@@ -95,7 +100,7 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResponse> {
 // ── GET /transcribe/result/{job_id} ──────────────────────────────────────────
 export async function getJobResult(jobId: string): Promise<JobResultResponse> {
   const res = await fetch(`${BASE_URL}/transcribe/result/${jobId}`, {
-    headers: authHeaders(),
+    headers: await authHeaders(),
   });
   if (!res.ok) throw await parseError(res);
   return res.json();
@@ -105,7 +110,7 @@ export async function getJobResult(jobId: string): Promise<JobResultResponse> {
 export async function cancelJob(jobId: string): Promise<void> {
   await fetch(`${BASE_URL}/transcribe/${jobId}`, {
     method: "DELETE",
-    headers: authHeaders(),
+    headers: await authHeaders(),
   });
 }
 
@@ -116,7 +121,7 @@ export async function translateTranscript(transcript: string): Promise<{ transla
 
   const res = await fetch(`${BASE_URL}/translate`, {
     method: "POST",
-    headers: authHeaders(),
+    headers: await authHeaders(),
     body: form,
   });
 
@@ -125,10 +130,13 @@ export async function translateTranscript(transcript: string): Promise<{ transla
 }
 
 // ── WebSocket URL builder ─────────────────────────────────────────────────────
-export function buildWsUrl(jobId: string, lastSequence: number = 0): string {
+export async function buildWsUrl(jobId: string, lastSequence: number = 0): Promise<string> {
+  const { data: { session } } = await supabase.auth.getSession();
   const wsBase = BASE_URL.replace(/^https/, "wss").replace(/^http/, "ws");
   const url = new URL(`${wsBase}/ws/transcribe/${jobId}`);
-  url.searchParams.set("token", API_KEY);
+  if (session?.access_token) {
+    url.searchParams.set("token", session.access_token);
+  }
   if (lastSequence > 0) url.searchParams.set("last_sequence", String(lastSequence));
   return url.toString();
 }

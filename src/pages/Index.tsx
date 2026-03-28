@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Wand2 } from "lucide-react";
+import { Wand2, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import UploadZone from "@/components/UploadZone";
@@ -7,12 +7,14 @@ import ProcessingOptions from "@/components/ProcessingOptions";
 import ProcessingScreen from "@/components/ProcessingScreen";
 import ResultsScreen from "@/components/ResultsScreen";
 import ThemeToggle from "@/components/ThemeToggle";
+import { useAuth } from "@/contexts/AuthContext";
 import type { FileInfo, ProcessingOptions as Options, TranscriptionResult } from "@/lib/mock";
 import type { JobResultResponse } from "@/types/aurascript";
 
 type AppState = "upload" | "processing" | "results";
 
 export default function Index() {
+  const { signOut } = useAuth();
   const [state, setState] = useState<AppState>("upload");
   const [file, setFile] = useState<File | null>(null);
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
@@ -57,7 +59,10 @@ export default function Index() {
       <div className="relative z-10 max-w-2xl mx-auto px-4 py-12 sm:py-20">
         {/* Header */}
         <header className="text-center mb-10 relative">
-          <div className="absolute right-0 top-0">
+          <div className="absolute right-0 top-0 flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
+              <LogOut className="w-4 h-4" />
+            </Button>
             <ThemeToggle />
           </div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-mono font-medium mb-4">
