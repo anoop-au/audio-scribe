@@ -54,7 +54,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen gradient-bg grid-pattern">
-      <div className="max-w-2xl mx-auto px-4 py-12 sm:py-20">
+      <div className="relative z-10 max-w-2xl mx-auto px-4 py-12 sm:py-20">
         {/* Header */}
         <header className="text-center mb-10 relative">
           <div className="absolute right-0 top-0">
