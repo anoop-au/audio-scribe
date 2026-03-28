@@ -58,7 +58,10 @@ export default function Index() {
       <div className="relative z-10 max-w-2xl mx-auto px-4 py-12 sm:py-20">
         {/* Header */}
         <header className="text-center mb-10 relative">
-          <div className="absolute right-0 top-0">
+          <div className="absolute right-0 top-0 flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
+              <LogOut className="w-4 h-4" />
+            </Button>
             <ThemeToggle />
           </div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-mono font-medium mb-4">
