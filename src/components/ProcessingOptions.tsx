@@ -26,10 +26,10 @@ export default function ProcessingOptions({ options, onChange }: ProcessingOptio
               key={opt.value}
               onClick={() => onChange({ ...options, outputFormat: opt.value as Options["outputFormat"] })}
               className={`
-                flex-1 text-xs font-medium py-1.5 px-3 rounded-lg transition-all duration-300 whitespace-nowrap
+                flex-1 text-xs font-medium py-1.5 px-4 rounded-lg transition-all duration-300 whitespace-nowrap
                 ${options.outputFormat === opt.value
                   ? "bg-gradient-to-r from-[rgba(255,106,0,0.9)] to-[rgba(255,45,146,0.9)] text-white shadow-[0_2px_12px_rgba(255,106,0,0.3)]"
-                  : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-foreground/5"
+                  : "text-muted-foreground/70 hover:text-foreground hover:bg-foreground/5"
                 }
               `}
             >
