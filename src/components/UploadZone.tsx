@@ -34,8 +34,8 @@ function AnimatedWaveform() {
           key={i}
           x={bar.x}
           y={20 - bar.height / 2}
-          width="4"
-          rx="2"
+          width="5"
+          rx="2.5"
           fill="url(#waveGradient)"
           className="animate-waveform-bar"
           style={{

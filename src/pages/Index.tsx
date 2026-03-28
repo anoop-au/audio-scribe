@@ -92,9 +92,9 @@ export default function Index() {
                 aria-hidden="true"
                 className="absolute inset-0 -z-10 pointer-events-none"
                 style={{
-                  background: "radial-gradient(ellipse at center, rgba(255,106,0,0.35) 0%, rgba(255,45,146,0.2) 40%, transparent 70%)",
-                  filter: "blur(50px)",
-                  transform: "scale(1.8, 2.5)",
+                  background: "radial-gradient(ellipse at center, rgba(255,106,0,0.3) 0%, rgba(255,45,146,0.18) 35%, rgba(30,144,255,0.1) 60%, transparent 80%)",
+                  filter: "blur(70px)",
+                  transform: "scale(2.2, 3)",
                 }}
               />
             </motion.span>

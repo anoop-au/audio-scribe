@@ -159,11 +159,11 @@
   }
 
   .grid-pattern {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='%23888' stroke-width='0.5' opacity='0.05'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='%23888' stroke-width='0.5' opacity='0.025'/%3E%3C/svg%3E");
     background-size: 40px 40px;
   }
   .dark .grid-pattern {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='%23fff' stroke-width='0.5' opacity='0.05'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='%23fff' stroke-width='0.5' opacity='0.025'/%3E%3C/svg%3E");
     background-size: 40px 40px;
   }
 
@@ -364,5 +364,10 @@
 }
 
 .animate-waveform-bar {
-  animation: waveform-bar 1.8s ease-in-out infinite;
+  animation: waveform-bar 1.8s ease-in-out infinite, waveform-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes waveform-shimmer {
+  0%, 100% { opacity: 0.85; filter: brightness(1); }
+  50% { opacity: 1; filter: brightness(1.4); }
 }
