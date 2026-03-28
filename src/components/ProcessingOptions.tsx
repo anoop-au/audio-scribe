@@ -5,7 +5,7 @@ import type { ProcessingOptions as Options } from "@/lib/mock";
 const FORMAT_OPTIONS = [
   { value: "transcript", label: "Full" },
   { value: "summary", label: "Summary" },
-  { value: "keypoints", label: "Key Points" },
+  { value: "keypoints", label: "Keys" },
   { value: "srt", label: "SRT" },
 ] as const;
 
