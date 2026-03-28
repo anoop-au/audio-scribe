@@ -10,11 +10,56 @@ interface UploadZoneProps {
   onClear: () => void;
 }
 
+function AnimatedWaveform() {
+  return (
+    <svg
+      viewBox="0 0 120 40"
+      className="w-32 h-8 mx-auto mb-3 opacity-30"
+      preserveAspectRatio="none"
+    >
+      {[
+        { x: 8, delay: "0s", height: 14 },
+        { x: 18, delay: "0.15s", height: 22 },
+        { x: 28, delay: "0.3s", height: 30 },
+        { x: 38, delay: "0.1s", height: 18 },
+        { x: 48, delay: "0.4s", height: 26 },
+        { x: 58, delay: "0.05s", height: 34 },
+        { x: 68, delay: "0.25s", height: 20 },
+        { x: 78, delay: "0.35s", height: 28 },
+        { x: 88, delay: "0.2s", height: 16 },
+        { x: 98, delay: "0.45s", height: 24 },
+        { x: 108, delay: "0.12s", height: 12 },
+      ].map((bar, i) => (
+        <rect
+          key={i}
+          x={bar.x}
+          y={20 - bar.height / 2}
+          width="4"
+          rx="2"
+          fill="url(#waveGradient)"
+          className="animate-waveform-bar"
+          style={{
+            animationDelay: bar.delay,
+            height: bar.height,
+            transformOrigin: `${bar.x + 2}px 20px`,
+          }}
+        />
+      ))}
+      <defs>
+        <linearGradient id="waveGradient" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#ff6a00" />
+          <stop offset="50%" stopColor="#ff2d92" />
+          <stop offset="100%" stopColor="#1e90ff" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
 export default function UploadZone({ onFileSelect, selectedFile, onClear }: UploadZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
 
   const handleFile = useCallback((file: File) => {
-    // Client-side validation
     if (file.size > MAX_FILE_BYTES) {
       toast.error("File exceeds 700 MB limit.");
       return;
@@ -58,10 +103,34 @@ export default function UploadZone({ onFileSelect, selectedFile, onClear }: Uplo
           onDragLeave={onDragLeave}
           className={`
             relative flex flex-col items-center justify-center w-full min-h-[220px] p-8
-            rounded-2xl cursor-pointer transition-all duration-300 glassmorphism-card
-            ${isDragging ? "glassmorphism-card-active" : ""}
+            rounded-2xl cursor-pointer transition-all duration-300 origin-center
+            ${isDragging
+              ? "scale-[1.02] shadow-[0_0_40px_rgba(255,106,0,0.3),0_0_80px_rgba(255,45,146,0.15)]"
+              : ""
+            }
           `}
+          style={{
+            background: isDragging
+              ? "rgba(255, 255, 255, 0.08)"
+              : "rgba(255, 255, 255, 0.03)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+          }}
         >
+          {/* Gradient border via pseudo-element inline approach */}
+          <div
+            className={`absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-300 ${isDragging ? "opacity-100" : "opacity-60"}`}
+            style={{
+              padding: "1px",
+              background: isDragging
+                ? "linear-gradient(135deg, rgba(255,106,0,0.7) 0%, rgba(255,45,146,0.5) 50%, rgba(30,144,255,0.4) 100%)"
+                : "linear-gradient(135deg, rgba(255,106,0,0.3) 0%, rgba(30,144,255,0.1) 50%, transparent 80%)",
+              WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+              WebkitMaskComposite: "xor",
+              maskComposite: "exclude",
+              borderRadius: "inherit",
+            }}
+          />
           <input
             type="file"
             accept={ACCEPTED_EXTENSIONS}
@@ -71,9 +140,12 @@ export default function UploadZone({ onFileSelect, selectedFile, onClear }: Uplo
               if (file) handleFile(file);
             }}
           />
+
+          <AnimatedWaveform />
+
           <div className={`
             p-4 rounded-2xl mb-4 transition-all duration-300
-            ${isDragging ? "bg-accent/10" : "bg-muted/60"}
+            ${isDragging ? "bg-accent/10 scale-110" : "bg-muted/60"}
           `}>
             <Upload className={`w-8 h-8 animate-icon-pulse transition-colors ${isDragging ? "text-accent" : "text-muted-foreground"}`} />
           </div>
