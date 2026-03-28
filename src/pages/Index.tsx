@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Wand2 } from "lucide-react";
+import { Wand2, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import UploadZone from "@/components/UploadZone";
@@ -7,6 +7,7 @@ import ProcessingOptions from "@/components/ProcessingOptions";
 import ProcessingScreen from "@/components/ProcessingScreen";
 import ResultsScreen from "@/components/ResultsScreen";
 import ThemeToggle from "@/components/ThemeToggle";
+import { useAuth } from "@/contexts/AuthContext";
 import type { FileInfo, ProcessingOptions as Options, TranscriptionResult } from "@/lib/mock";
 import type { JobResultResponse } from "@/types/aurascript";
 
