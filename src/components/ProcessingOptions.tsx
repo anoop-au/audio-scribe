@@ -17,18 +17,19 @@ interface ProcessingOptionsProps {
 export default function ProcessingOptions({ options, onChange }: ProcessingOptionsProps) {
   return (
     <div className="grid grid-cols-2 gap-3">
-      <div className="glassmorphism-card rounded-2xl px-4 py-4 space-y-2">
-        <Label className="text-[10px] text-muted-foreground font-mono tracking-wider uppercase">Output Format</Label>
+      {/* Output Format — orange aura */}
+      <div className="glassmorphism-card glassmorphism-card--orange rounded-2xl px-5 py-5 space-y-2.5">
+        <Label className="text-[10px] text-muted-foreground/60 font-mono tracking-[0.15em] uppercase">Output Format</Label>
         <div className="flex rounded-xl bg-background/30 p-1 gap-0.5">
           {FORMAT_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => onChange({ ...options, outputFormat: opt.value as Options["outputFormat"] })}
               className={`
-                flex-1 text-xs font-medium py-1.5 px-2 rounded-lg transition-all duration-300 whitespace-nowrap
+                flex-1 text-xs font-medium py-1.5 px-3 rounded-lg transition-all duration-300 whitespace-nowrap
                 ${options.outputFormat === opt.value
                   ? "bg-gradient-to-r from-[rgba(255,106,0,0.9)] to-[rgba(255,45,146,0.9)] text-white shadow-[0_2px_12px_rgba(255,106,0,0.3)]"
-                  : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+                  : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-foreground/5"
                 }
               `}
             >
@@ -38,8 +39,9 @@ export default function ProcessingOptions({ options, onChange }: ProcessingOptio
         </div>
       </div>
 
-      <div className="glassmorphism-card rounded-2xl px-4 py-4 space-y-2">
-        <Label className="text-[10px] text-muted-foreground font-mono tracking-wider uppercase">Language Hint</Label>
+      {/* Language Hint — purple aura */}
+      <div className="glassmorphism-card glassmorphism-card--purple rounded-2xl px-5 py-5 space-y-2.5">
+        <Label className="text-[10px] text-muted-foreground/60 font-mono tracking-[0.15em] uppercase">Language Hint</Label>
         <Input
           placeholder="e.g., Malayalam, Spanish"
           value={options.languageHint}
