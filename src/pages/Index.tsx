@@ -116,15 +116,17 @@ export default function Index() {
                 transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                 className="space-y-6"
               >
-                <UploadZone
-                  onFileSelect={handleFileSelect}
-                  selectedFile={fileInfo}
-                  onClear={handleClear}
-                />
-
-                <div className="glassmorphism-card rounded-2xl px-5 py-5">
-                  <ProcessingOptions options={options} onChange={setOptions} />
+                {/* Large central upload tile */}
+                <div className="glassmorphism-card rounded-2xl p-5">
+                  <UploadZone
+                    onFileSelect={handleFileSelect}
+                    selectedFile={fileInfo}
+                    onClear={handleClear}
+                  />
                 </div>
+
+                {/* Settings tiles side-by-side */}
+                <ProcessingOptions options={options} onChange={setOptions} />
 
                 {fileInfo && (
                   <Button
