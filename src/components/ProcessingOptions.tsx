@@ -46,7 +46,7 @@ export default function ProcessingOptions({ options, onChange }: ProcessingOptio
           placeholder="e.g., Malayalam, Spanish"
           value={options.languageHint}
           onChange={(e) => onChange({ ...options, languageHint: e.target.value })}
-          className="bg-card/60 border-border/40 h-9 text-sm"
+          className="bg-white/5 border-border/40 h-9 text-sm px-4"
         />
       </div>
     </div>
