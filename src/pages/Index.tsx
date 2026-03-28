@@ -14,6 +14,7 @@ import type { JobResultResponse } from "@/types/aurascript";
 type AppState = "upload" | "processing" | "results";
 
 export default function Index() {
+  const { signOut } = useAuth();
   const [state, setState] = useState<AppState>("upload");
   const [file, setFile] = useState<File | null>(null);
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
