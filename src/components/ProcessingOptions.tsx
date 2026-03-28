@@ -40,8 +40,8 @@ export default function ProcessingOptions({ options, onChange }: ProcessingOptio
       </div>
 
       {/* Language Hint — purple aura */}
-      <div className="glassmorphism-card glassmorphism-card--purple rounded-2xl px-5 py-5 space-y-2.5">
-        <Label className="text-[10px] text-muted-foreground/60 font-mono tracking-[0.15em] uppercase">Language Hint</Label>
+      <div className="glassmorphism-card glassmorphism-card--purple rounded-2xl px-5 py-5 space-y-3">
+        <Label className="text-[10px] text-muted-foreground/60 font-mono tracking-[0.15em] uppercase block">Language Hint</Label>
         <Input
           placeholder="e.g., Malayalam, Spanish"
           value={options.languageHint}

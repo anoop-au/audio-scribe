@@ -364,5 +364,10 @@
 }
 
 .animate-waveform-bar {
-  animation: waveform-bar 1.8s ease-in-out infinite;
+  animation: waveform-bar 1.8s ease-in-out infinite, waveform-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes waveform-shimmer {
+  0%, 100% { opacity: 0.85; filter: brightness(1); }
+  50% { opacity: 1; filter: brightness(1.4); }
 }
