@@ -177,12 +177,14 @@ export default function Index() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground/60 mt-8 font-mono">
-          Your files are processed securely and never stored
-        </p>
-        <p className="text-center text-xs text-muted-foreground/40 mt-2 italic">
-          With love from Anoop
-        </p>
+        <footer className="text-center mt-10 space-y-1">
+          <p className="text-[11px] text-muted-foreground/50 font-mono tracking-wide">
+            Your files are processed securely and never stored
+          </p>
+          <p className="text-[9px] text-muted-foreground/30 tracking-[0.2em] uppercase">
+            With love from Anoop
+          </p>
+        </footer>
       </div>
     </div>
   );
