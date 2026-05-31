@@ -120,11 +120,12 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
     );
   }, [progress, state.chunkCount]);
 
-  // Elapsed timer
+  // Elapsed timer - starts after upload finishes, stops when job complete
   useEffect(() => {
+    if (!jobId || progress >= 100 || error) return;
     const timer = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [jobId, progress >= 100, error]);
 
   const handleCancel = () => {
     cancelSocket();
@@ -137,19 +138,12 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
   const formatTime = (s: number) =>
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
-  const estimatedTotalRef = useRef<number | null>(null);
   const estimatedRemaining = useMemo(() => {
     if (progress >= 100) return 0;
     if (progress > 5 && elapsed > 0) {
       const rate = progress / elapsed; // percent per second
       const totalEstimate = Math.round(100 / rate);
-      // Lock in the first meaningful estimate, then only allow it to decrease
-      if (estimatedTotalRef.current === null) {
-        estimatedTotalRef.current = totalEstimate;
-      } else {
-        estimatedTotalRef.current = Math.min(estimatedTotalRef.current, totalEstimate);
-      }
-      return Math.max(0, estimatedTotalRef.current - elapsed);
+      return Math.max(0, totalEstimate - elapsed);
     }
     return null; // not enough data yet
   }, [progress, elapsed]);

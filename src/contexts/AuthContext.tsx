@@ -17,17 +17,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Safety timeout: if Supabase doesn't respond in 5s, stop loading to show the auth screen
+    const timeoutId = setTimeout(() => {
+      setLoading(current => {
+        if (current) {
+          console.warn("[auth] Supabase session fetch timed out after 5s");
+          return false;
+        }
+        return false;
+      });
+    }, 5000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      clearTimeout(timeoutId);
       setSession(session);
       setLoading(false);
+      
+      // Clear sensitive fragments from URL
+      if (window.location.hash && (window.location.hash.includes("access_token") || window.location.hash.includes("refresh_token"))) {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(timeoutId);
       setSession(session);
       setLoading(false);
+
+      // Clear sensitive fragments from URL
+      if (window.location.hash && (window.location.hash.includes("access_token") || window.location.hash.includes("refresh_token"))) {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   const signOut = async () => {

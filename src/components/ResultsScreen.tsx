@@ -75,10 +75,16 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
       setShowTranslation(!showTranslation);
       return;
     }
+
+    if (!jobResult?.job_id) {
+      toast.error("Job ID not found. Translation requires a valid job.");
+      return;
+    }
+
     setTranslating(true);
     try {
-      const data = await translateTranscript(result.transcript);
-      setTranslatedText(data.translation);
+      const data = await translateTranscript(jobResult.job_id);
+      setTranslatedText(data.translated_transcript);
       setShowTranslation(true);
       toast.success("Translation complete");
     } catch (err: unknown) {
@@ -298,6 +304,11 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
         className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
       >
         <div className="max-w-2xl mx-auto px-4 pb-4 pointer-events-auto">
+          <div className="flex justify-center mb-3">
+            <p className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-widest bg-black/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/5">
+              Translation is processed via Cohere Enterprise API (Zero-Retention)
+            </p>
+          </div>
           <div
             className="rounded-2xl p-3 flex flex-col sm:flex-row gap-2"
             style={{

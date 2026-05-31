@@ -155,6 +155,12 @@ export default function UploadZone({ onFileSelect, selectedFile, onClear }: Uplo
           <p className="text-xs text-muted-foreground/70 font-mono" style={{ letterSpacing: '1px' }}>
             MP3 · WAV · M4A · OGG · FLAC · AAC · WEBM · MP4
           </p>
+
+          <div className="mt-8 pt-6 border-t border-white/5 w-full text-center">
+            <p className="text-[11px] text-muted-foreground/80 font-medium flex items-center justify-center gap-1.5">
+              <span className="text-accent">🔒 Transcription (The Vault):</span> Your audio is processed on our secure private infrastructure. We do not store your data nor train on your voice.
+            </p>
+          </div>
         </label>
       ) : (
         <div className="glassmorphism-card rounded-2xl p-5 flex items-center gap-4 animate-slide-fade-in">

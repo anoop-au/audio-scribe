@@ -35,6 +35,13 @@ export const ACCEPTED_EXTENSIONS = ".mp3,.wav,.m4a,.ogg,.flac,.aac,.webm,.mp4";
 async function authHeaders(): Promise<HeadersInit> {
   const { data: { session } } = await supabase.auth.getSession();
   const headers: Record<string, string> = {};
+  
+  // Use the API Key from environment variables
+  const apiKey = import.meta.env.VITE_API_KEY;
+  if (apiKey) {
+    headers["X-API-Key"] = apiKey;
+  }
+  
   if (session?.access_token) {
     headers["Authorization"] = `Bearer ${session.access_token}`;
   }
@@ -68,7 +75,7 @@ export async function submitTranscription(file: File, options: TranscribeOptions
   console.log("[api] submitTranscription options:", JSON.stringify(options));
 
   const form = new FormData();
-  form.append("file", file);
+  form.append("audio_file", file);
   if (options.languageHint) form.append("language_hint", options.languageHint);
   if (options.numSpeakers) form.append("num_speakers", String(options.numSpeakers));
   if (options.webhookUrl) form.append("webhook_url", options.webhookUrl);
@@ -114,15 +121,12 @@ export async function cancelJob(jobId: string): Promise<void> {
   });
 }
 
-// ── POST /translate ────────────────────────────────────────────────────────────
-export async function translateTranscript(transcript: string): Promise<{ translation: string }> {
-  const form = new FormData();
-  form.append("transcript", transcript);
-
-  const res = await fetch(`${BASE_URL}/translate`, {
+// ── POST /translate/{job_id} ──────────────────────────────────────────────────
+export async function translateTranscript(jobId: string): Promise<{ translated_transcript: string }> {
+  const cleanJobId = jobId.split(":")[0];
+  const res = await fetch(`${BASE_URL}/translate/${cleanJobId}`, {
     method: "POST",
     headers: await authHeaders(),
-    body: form,
   });
 
   if (!res.ok) throw await parseError(res);
@@ -131,12 +135,21 @@ export async function translateTranscript(transcript: string): Promise<{ transla
 
 // ── WebSocket URL builder ─────────────────────────────────────────────────────
 export async function buildWsUrl(jobId: string, lastSequence: number = 0): Promise<string> {
-  const { data: { session } } = await supabase.auth.getSession();
   const wsBase = BASE_URL.replace(/^https/, "wss").replace(/^http/, "ws");
   const url = new URL(`${wsBase}/ws/transcribe/${jobId}`);
-  if (session?.access_token) {
-    url.searchParams.set("token", session.access_token);
+  
+  // Use the API Key from environment variables
+  const apiKey = import.meta.env.VITE_API_KEY;
+  if (apiKey) {
+    url.searchParams.set("token", apiKey);
+  } else {
+    // Fallback to supabase token if API key is not set
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      url.searchParams.set("token", session.access_token);
+    }
   }
+  
   if (lastSequence > 0) url.searchParams.set("last_sequence", String(lastSequence));
   return url.toString();
 }
