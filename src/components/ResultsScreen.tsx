@@ -224,7 +224,7 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
       </motion.div>
 
       {/* Step 3: Transcription Canvas */}
-      <motion.div {...fadeUp(0.6)} className="w-full">
+      <motion.div {...fadeUp(0.6)} className="w-full max-h-[500px] overflow-hidden">
         {translatedText && (
           <div className="flex gap-2 mb-2">
             <button
@@ -244,7 +244,7 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
           </div>
         )}
         <div
-          className="glassmorphism-card rounded-2xl p-5 relative overflow-hidden"
+          className="glassmorphism-card rounded-2xl p-5 relative overflow-hidden h-full"
           style={{
             background: "linear-gradient(180deg, rgba(255,106,0,0.06) 0%, rgba(255,255,255,0.02) 30%, rgba(0,0,0,0) 100%)",
             boxShadow: "inset 0 1px 0 rgba(255,106,0,0.12), inset 0 8px 24px -8px rgba(255,106,0,0.08), 0 0 32px -8px rgba(255,106,0,0.06)",
@@ -259,14 +259,10 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
           />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 z-10 bg-gradient-to-t from-card/80 to-transparent rounded-b-2xl" />
           <div
-            className="max-h-64 overflow-y-auto text-sm leading-relaxed tracking-tight whitespace-pre-line pr-2 relative z-20"
+            className="h-full overflow-y-auto text-sm leading-relaxed tracking-tight whitespace-pre-line pr-4 relative z-20"
             style={{
               scrollbarWidth: "thin",
               scrollbarColor: "rgba(255,106,0,0.3) transparent",
-              background: "linear-gradient(180deg, hsl(var(--foreground) / 0.95) 0%, hsl(var(--foreground) / 0.75) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
             }}
           >
             {showTranslation && translatedText ? translatedText : result.transcript}
