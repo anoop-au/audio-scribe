@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { buildWsUrl } from "@/lib/api";
-import type { AnyEvent, ProcessingState, JobCompleteEvent, JobFailedEvent } from "@/types/aurascript";
+import type { JobCompleteEvent, JobFailedEvent, ProcessingState } from "@/types/aurascript";
 
 export type SocketStatus = "connecting" | "connected" | "reconnecting" | "closed" | "failed";
 
@@ -9,6 +9,16 @@ interface UseTranscriptionSocketOptions {
   onComplete: (event: JobCompleteEvent) => void;
   onFailed:   (event: JobFailedEvent) => void;
 }
+
+const STAGE_LABELS: Record<string, string> = {
+  ANALYZING:        "Analysing audio…",
+  PLANNING:         "Planning chunks…",
+  CHUNKING:         "Segmenting audio…",
+  TRANSCRIBING:     "Transcribing…",
+  QUALITY_CHECKING: "Checking quality…",
+  STITCHING:        "Stitching transcript…",
+  FINALIZING:       "Finalising…",
+};
 
 export function useTranscriptionSocket({
   jobId,
@@ -25,10 +35,16 @@ export function useTranscriptionSocket({
   });
   const [socketStatus, setSocketStatus] = useState<SocketStatus>("connecting");
 
-  const wsRef              = useRef<WebSocket | null>(null);
-  const lastSequenceRef    = useRef(0);
+  const wsRef               = useRef<WebSocket | null>(null);
+  const lastSequenceRef     = useRef(0);
   const reconnectAttemptsRef = useRef(0);
-  const isMountedRef       = useRef(true);
+  const isMountedRef        = useRef(true);
+
+  // Keep callback refs current so handleEvent never captures a stale closure.
+  const onCompleteRef = useRef(onComplete);
+  const onFailedRef   = useRef(onFailed);
+  onCompleteRef.current = onComplete;
+  onFailedRef.current   = onFailed;
 
   const connect = useCallback(async () => {
     if (!jobId || !isMountedRef.current) return;
@@ -48,7 +64,8 @@ export function useTranscriptionSocket({
     ws.onmessage = (e: MessageEvent) => {
       if (!isMountedRef.current) return;
       try {
-        const event: AnyEvent = JSON.parse(e.data as string);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const event: any = JSON.parse(e.data as string);
         lastSequenceRef.current = event.sequence;
         handleEvent(event);
       } catch { /* ignore parse errors */ }
@@ -57,7 +74,7 @@ export function useTranscriptionSocket({
     ws.onclose = (e: CloseEvent) => {
       if (!isMountedRef.current) return;
       if (e.code === 1000) { setSocketStatus("closed"); return; }
-      if (e.code === 1008) { setSocketStatus("failed"); return; } // auth failure — don't retry
+      if (e.code === 1008) { setSocketStatus("failed"); return; }
       if (reconnectAttemptsRef.current < 5) {
         const delay = Math.min(1000 * 2 ** reconnectAttemptsRef.current, 30_000);
         reconnectAttemptsRef.current++;
@@ -70,13 +87,16 @@ export function useTranscriptionSocket({
     ws.onerror = () => { ws.close(); };
   }, [jobId]);
 
-  function handleEvent(event: AnyEvent) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function handleEvent(event: any) {
+    const eventType = event.event_type as string;
+
     setState(prev => {
-      switch (event.event_type) {
-        case "job.accepted":
+      switch (eventType) {
+        case "JOB_ACCEPTED":
           return { ...prev, progress: 2, stage: "Job accepted…" };
 
-        case "job.audio_analyzed":
+        case "AUDIO_ANALYZED":
           return {
             ...prev,
             progress: 5,
@@ -87,56 +107,72 @@ export function useTranscriptionSocket({
             },
           };
 
-        case "job.plan_created":
+        case "PLAN_CREATED":
           return {
             ...prev,
             progress: 8,
-            stage: `Planning ${event.chunk_count} chunks…`,
-            chunkCount: event.chunk_count,
+            stage: `Planning ${event.estimated_chunks} chunks…`,
+            chunkCount: event.estimated_chunks,
           };
 
-        case "job.chunking_complete":
-          return { ...prev, progress: 12, stage: "Audio segmented.", chunkCount: event.chunk_count };
+        case "CHUNKING_STARTED":
+          return { ...prev, stage: "Segmenting audio…" };
 
-        case "job.chunk_transcribed":
+        case "CHUNKING_COMPLETE":
           return {
             ...prev,
-            chunksComplete: prev.chunksComplete + 1,
-            previewLines: [...prev.previewLines, event.preview],
+            progress: 12,
+            stage: "Audio segmented.",
+            chunkCount: event.actual_chunk_count,
           };
 
-        case "job.quality_checked": {
+        case "CHUNK_TRANSCRIBED": {
+          const newChunksComplete = prev.chunksComplete + 1;
+          const totalChunks = prev.chunkCount || event.total_chunks || 1;
+          // Interpolate progress 12% → 87% as chunks complete
+          const chunkProgress = 12 + Math.round((newChunksComplete / totalChunks) * 75);
+          return {
+            ...prev,
+            chunksComplete: newChunksComplete,
+            progress: Math.max(prev.progress, Math.min(chunkProgress, 87)),
+            previewLines: [...prev.previewLines, event.preview],
+          };
+        }
+
+        case "QUALITY_CHECKED": {
           const scores = [...prev.qualityScores];
-          scores[event.chunk_index] = event.score;
+          scores[event.chunk_index] = event.final_score;
           return { ...prev, qualityScores: scores };
         }
 
-        case "job.progress_heartbeat":
+        case "PROGRESS_HEARTBEAT":
           return {
             ...prev,
-            progress: Math.max(prev.progress, 12 + event.progress_pct * 0.75),
-            stage: `Transcribing… ${event.chunks_done}/${event.total_chunks} chunks`,
-            chunksComplete: event.chunks_done,
+            progress: Math.max(prev.progress, event.overall_progress_percent),
+            stage: STAGE_LABELS[event.current_stage] ?? `${event.current_stage}…`,
           };
 
-        case "job.stitching_started":
+        case "STITCHING_STARTED":
           return { ...prev, progress: 90, stage: "Stitching transcript…" };
 
-        case "job.stitching_complete":
+        case "STITCHING_COMPLETE":
           return { ...prev, progress: 97, stage: "Finalising…" };
 
-        case "job.complete":
-          onComplete(event);
+        case "JOB_COMPLETE":
           return { ...prev, progress: 100, stage: "Complete!" };
 
-        case "job.failed":
-          onFailed(event);
+        case "JOB_FAILED":
           return { ...prev, stage: "Failed." };
 
         default:
           return prev;
       }
     });
+
+    // Terminal callbacks must fire OUTSIDE setState — calling them inside
+    // setState runs during React's render phase and can abort the update.
+    if (eventType === "JOB_COMPLETE") onCompleteRef.current(event as JobCompleteEvent);
+    else if (eventType === "JOB_FAILED") onFailedRef.current(event as JobFailedEvent);
   }
 
   useEffect(() => {

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { createInitialSteps, type ProcessingStep, type TranscriptionResult, type FileInfo, type ProcessingOptions } from "@/lib/mock";
-import { submitTranscription, cancelJob } from "@/lib/api";
+import { submitTranscription, cancelJob, getJobResult } from "@/lib/api";
 import { useTranscriptionSocket } from "@/hooks/useTranscriptionSocket";
 import type { JobCompleteEvent, JobFailedEvent, JobResultResponse } from "@/types/aurascript";
 
@@ -30,14 +30,24 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
   const [error, setError] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const jobIdRef = useRef<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const xhrAbortRef = useRef<AbortController | null>(null);
 
   // Upload file and get job_id
   useEffect(() => {
     let cancelled = false;
-    submitTranscription(file, {
-      languageHint: options.languageHint,
-      translateToEnglish: options.translateToEnglish,
-    })
+
+    setUploadProgress(0);
+
+    const controller = new AbortController();
+    xhrAbortRef.current = controller;
+
+    submitTranscription(
+      file,
+      { languageHint: options.languageHint, translateToEnglish: options.translateToEnglish },
+      (pct) => { if (!cancelled) setUploadProgress(pct); },
+      controller.signal,
+    )
       .then((res) => {
         if (!cancelled) {
           setJobId(res.job_id);
@@ -46,33 +56,44 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
       })
       .catch((err) => {
         if (!cancelled) {
+          if (err instanceof DOMException && err.name === "AbortError") return;
           setError(err.message ?? "Upload failed");
         }
       });
-    return () => { cancelled = true; };
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
   }, []);
 
-  const handleComplete = useCallback((event: JobCompleteEvent) => {
-    const result: TranscriptionResult = {
-      filename: file.name,
-      duration: `${Math.round(event.metadata.duration_seconds)}s`,
-      language: Array.isArray(event.metadata.languages_detected)
-        ? (event.metadata.languages_detected as string[]).join(", ")
-        : "auto",
-      processingTime: event.metadata.processing_time_seconds
-        ? `${Math.round(event.metadata.processing_time_seconds)}s`
-        : "N/A",
-      wordCount: event.transcript.split(/\s+/).length,
-      transcript: event.transcript,
-    };
-    const rawJobResult: JobResultResponse = {
-      job_id: event.job_id,
-      status: "completed",
-      transcript: event.transcript,
-      speaker_map: event.speaker_map,
-      metadata: event.metadata,
-    };
-    setTimeout(() => onComplete(result, rawJobResult), 600);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleComplete = useCallback(async (event: any) => {
+    const jid = jobIdRef.current;
+    if (!jid) {
+      setError("Transcription completed but job ID was unavailable — please refresh.");
+      return;
+    }
+    try {
+      // JOB_COMPLETE WS event carries stats only (no transcript/speaker_map).
+      // Fetch the full result from the HTTP endpoint.
+      const jobResult = await getJobResult(jid);
+      const result: TranscriptionResult = {
+        filename: file.name,
+        duration: `${Math.round((event.total_duration_seconds as number) ?? 0)}s`,
+        language: Array.isArray(event.languages_detected) && (event.languages_detected as string[]).length > 0
+          ? (event.languages_detected as string[]).join(", ")
+          : "auto",
+        processingTime: event.processing_time_seconds != null
+          ? `${Math.round(event.processing_time_seconds as number)}s`
+          : "N/A",
+        wordCount: (event.word_count as number) ?? jobResult.transcript.split(/\s+/).length,
+        transcript: jobResult.transcript,
+      };
+      setTimeout(() => onComplete(result, jobResult), 600);
+    } catch (err: unknown) {
+      setError((err as { message?: string })?.message ?? "Failed to fetch transcript — please try again.");
+    }
   }, [file.name, onComplete]);
 
   const handleFailed = useCallback((event: JobFailedEvent) => {
@@ -86,8 +107,14 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
   });
 
   const progress = state.progress;
+
+  // Upload phase: show XHR byte progress (jobId is null).
+  // Pipeline phase: show WebSocket progress (jobId is set).
+  const displayProgress = jobId ? progress : uploadProgress;
+
   const statusText = useMemo(() => {
     if (error) return "Failed";
+    if (!jobId) return "Uploading file...";
     if (progress >= 97) return "Finalizing...";
     if (progress >= 87) return "Merging transcript...";
     if (progress >= 12) {
@@ -96,10 +123,8 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
         : "Transcribing audio...";
     }
     if (progress >= 5) return "Splitting into segments...";
-    if (progress >= 2) return "Analyzing audio...";
-    if (jobId) return "Analyzing audio...";
-    return "Uploading file...";
-  }, [error, progress, state.chunksComplete, state.chunkCount, jobId]);
+    return "Analyzing audio...";
+  }, [error, jobId, progress, state.chunksComplete, state.chunkCount]);
 
   // Update steps based on progress
   useEffect(() => {
@@ -111,14 +136,14 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
     setSteps((prev) =>
       prev.map((s) => ({
         ...s,
-        status: progress >= stepMap[s.id]
+        status: displayProgress >= stepMap[s.id]
           ? "done" as const
-          : progress >= (stepMap[s.id] - 10)
+          : displayProgress >= (stepMap[s.id] - 10)
             ? "active" as const
             : "pending" as const,
       }))
     );
-  }, [progress, state.chunkCount]);
+  }, [displayProgress, state.chunkCount]);
 
   // Elapsed timer - starts after upload finishes, stops when job complete
   useEffect(() => {
@@ -128,6 +153,7 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
   }, [jobId, progress >= 100, error]);
 
   const handleCancel = () => {
+    xhrAbortRef.current?.abort();
     cancelSocket();
     if (jobIdRef.current) {
       cancelJob(jobIdRef.current).catch(() => {});
@@ -138,19 +164,14 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
   const formatTime = (s: number) =>
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
-  const estimatedRemaining = useMemo(() => {
-    if (progress >= 100) return 0;
-    if (progress > 5 && elapsed > 0) {
-      const rate = progress / elapsed; // percent per second
-      const totalEstimate = Math.round(100 / rate);
-      return Math.max(0, totalEstimate - elapsed);
-    }
-    return null; // not enough data yet
-  }, [progress, elapsed]);
+  const estimatedRemaining: number | null = useMemo(() => {
+    if (!jobId) return null;
+    return Math.max(0, Math.round(((100 - progress) / Math.max(progress, 1)) * elapsed));
+  }, [jobId, progress, elapsed]);
   const ringSize = typeof window !== "undefined" && window.innerWidth < 768 ? 160 : 200;
   const ringRadius = ringSize / 2 - 16;
   const circumference = 2 * Math.PI * ringRadius;
-  const offset = circumference - (progress / 100) * circumference;
+  const offset = circumference - (displayProgress / 100) * circumference;
 
   if (error) {
     return (
@@ -193,7 +214,7 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
             filter="url(#neonGlow)" className="transition-all duration-500 ease-out" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-          <span className="text-4xl sm:text-5xl font-bold font-mono tracking-tight">{progress}%</span>
+          <span className="text-4xl sm:text-5xl font-bold font-mono tracking-tight">{displayProgress}%</span>
         </div>
       </div>
 
@@ -203,7 +224,7 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
         <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground font-mono">
           <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{formatTime(elapsed)}</span>
           <span className="text-muted-foreground/50">·</span>
-          <span>~{estimatedRemaining !== null ? formatTime(estimatedRemaining) : "--:--"} remaining</span>
+          <span>{estimatedRemaining !== null ? `~${formatTime(estimatedRemaining)}` : "~-:--"} remaining</span>
         </div>
       </motion.div>
 
@@ -216,7 +237,7 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
             };
             const [start, end] = stepRanges[step.id] || [0, 100];
             const stepProgress = step.status === "done" ? 1
-              : step.status === "active" ? Math.min(1, Math.max(0, (progress - start) / (end - start)))
+              : step.status === "active" ? Math.min(1, Math.max(0, (displayProgress - start) / (end - start)))
               : 0;
             const iconSize = 36;
             const strokeW = 2.5;

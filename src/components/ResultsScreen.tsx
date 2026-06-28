@@ -302,7 +302,7 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
         <div className="max-w-2xl mx-auto px-4 pb-4 pointer-events-auto">
           <div className="flex justify-center mb-3">
             <p className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-widest bg-black/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/5">
-              Translation is processed via Cohere Enterprise API (Zero-Retention)
+              Translation is processed via AI (Zero-Retention)
             </p>
           </div>
           <div
