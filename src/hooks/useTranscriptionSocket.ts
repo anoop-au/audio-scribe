@@ -126,6 +126,18 @@ export function useTranscriptionSocket({
             chunkCount: event.actual_chunk_count,
           };
 
+        case "CHUNK_PROCESSING_STARTED":
+          return {
+            ...prev,
+            stage: `Transcribing chunk ${event.chunk_index + 1} of ${event.total_chunks}…`,
+          };
+
+        case "CHUNK_RETRY":
+          return { ...prev, stage: `Retrying chunk ${event.chunk_index + 1}…` };
+
+        case "AGENT_DECISION":
+          return { ...prev, stage: event.decision };
+
         case "CHUNK_TRANSCRIBED": {
           const newChunksComplete = prev.chunksComplete + 1;
           const totalChunks = prev.chunkCount || event.total_chunks || 1;
