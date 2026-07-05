@@ -1,8 +1,34 @@
 import { useCallback, useState } from "react";
 import { Upload, FileAudio, FileVideo, X } from "lucide-react";
 import { formatFileSize, estimateDuration, type FileInfo } from "@/lib/mock";
-import { ACCEPTED_EXTENSIONS, ACCEPTED_MIME_TYPES, MAX_FILE_BYTES } from "@/lib/api";
+import {
+  ACCEPTED_EXTENSIONS,
+  ACCEPTED_MIME_TYPES,
+  MAX_FILE_BYTES,
+  FREE_TIER_MAX_DURATION_SECONDS,
+} from "@/lib/api";
 import { toast } from "sonner";
+
+// Reads duration client-side via a native audio/video element's
+// loadedmetadata event — no ffmpeg.wasm or extra dependency needed.
+// Courtesy check only: resolves to null (skips the check) if the browser
+// can't determine duration, since the backend is the authoritative gate.
+function readMediaDuration(file: File): Promise<number | null> {
+  return new Promise((resolve) => {
+    const el = document.createElement(file.type.startsWith("video") ? "video" : "audio");
+    el.preload = "metadata";
+    const url = URL.createObjectURL(file);
+    el.src = url;
+    el.onloadedmetadata = () => {
+      URL.revokeObjectURL(url);
+      resolve(Number.isFinite(el.duration) ? el.duration : null);
+    };
+    el.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(null);
+    };
+  });
+}
 
 interface UploadZoneProps {
   onFileSelect: (file: File, info: FileInfo) => void;
@@ -59,13 +85,25 @@ function AnimatedWaveform() {
 export default function UploadZone({ onFileSelect, selectedFile, onClear }: UploadZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
 
-  const handleFile = useCallback((file: File) => {
+  const handleFile = useCallback(async (file: File) => {
     if (file.size > MAX_FILE_BYTES) {
       toast.error("File exceeds 700 MB limit.");
       return;
     }
     if (!ACCEPTED_MIME_TYPES.includes(file.type) && file.type !== "") {
       toast.error("Unsupported file type. Please use MP3, WAV, M4A, OGG, FLAC, AAC, WebM, or MP4.");
+      return;
+    }
+
+    // Courtesy check only — there's no plan/tier info on the client yet, so
+    // this applies to every upload. The backend is the authoritative gate
+    // and re-checks the real duration against the user's actual tier.
+    const durationSeconds = await readMediaDuration(file);
+    if (durationSeconds !== null && durationSeconds > FREE_TIER_MAX_DURATION_SECONDS) {
+      toast.error(
+        `This file is ~${Math.round(durationSeconds / 60)} minutes long. ` +
+        "Free accounts are limited to 30-minute files — upgrade to Pro for longer files."
+      );
       return;
     }
 

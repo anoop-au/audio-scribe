@@ -12,6 +12,10 @@ const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) ?? "https://www.a
 // Max enforced by backend — show friendly error above this
 export const MAX_FILE_BYTES = 700 * 1024 * 1024;
 
+// Free-tier per-file duration cap enforced by the backend (30 minutes).
+// This is a courtesy check only — the backend rejects the job regardless.
+export const FREE_TIER_MAX_DURATION_SECONDS = 1800;
+
 export const ACCEPTED_MIME_TYPES = [
   "audio/mpeg",
   "audio/mp3",
