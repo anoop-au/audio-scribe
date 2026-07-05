@@ -31,9 +31,10 @@ export const ACCEPTED_MIME_TYPES = [
   "audio/webm",
   "video/webm",
   "video/mp4",
+  "video/quicktime",
 ];
 
-export const ACCEPTED_EXTENSIONS = ".mp3,.wav,.m4a,.ogg,.flac,.aac,.webm,.mp4";
+export const ACCEPTED_EXTENSIONS = ".mp3,.wav,.m4a,.ogg,.flac,.aac,.webm,.mp4,.mov";
 
 // ── Headers ───────────────────────────────────────────────────────────────────
 async function authHeaders(): Promise<Record<string, string>> {
