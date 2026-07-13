@@ -7,6 +7,7 @@ import ProcessingOptions from "@/components/ProcessingOptions";
 import ProcessingScreen from "@/components/ProcessingScreen";
 import ResultsScreen from "@/components/ResultsScreen";
 import ThemeToggle from "@/components/ThemeToggle";
+import UpgradeButton from "@/components/UpgradeButton";
 import { useAuth } from "@/contexts/AuthContext";
 import type { FileInfo, ProcessingOptions as Options, TranscriptionResult } from "@/lib/mock";
 import type { JobResultResponse } from "@/types/aurascript";
@@ -60,6 +61,7 @@ export default function Index() {
         {/* Header */}
         <header className="text-center mb-10 relative">
           <div className="absolute right-0 top-0 flex items-center gap-2">
+            <UpgradeButton />
             <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
               <LogOut className="w-4 h-4" />
             </Button>
