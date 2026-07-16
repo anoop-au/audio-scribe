@@ -136,11 +136,13 @@ export default function ProcessingScreen({ file, fileInfo, options, onComplete, 
     setSteps((prev) =>
       prev.map((s) => ({
         ...s,
-        status: displayProgress >= stepMap[s.id]
-          ? "done" as const
-          : displayProgress >= (stepMap[s.id] - 10)
-            ? "active" as const
-            : "pending" as const,
+        status: !jobId
+          ? "pending" as const
+          : displayProgress >= stepMap[s.id]
+            ? "done" as const
+            : displayProgress >= (stepMap[s.id] - 10)
+              ? "active" as const
+              : "pending" as const,
       }))
     );
   }, [displayProgress, state.chunkCount]);
