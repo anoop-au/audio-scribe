@@ -34,7 +34,8 @@ export const ACCEPTED_MIME_TYPES = [
   "video/quicktime",
 ];
 
-export const ACCEPTED_EXTENSIONS = ".mp3,.wav,.m4a,.ogg,.flac,.aac,.webm,.mp4,.mov";
+export const ACCEPTED_EXTENSIONS = "audio/*,video/webm,.mp3,.wav,.m4a,.ogg,.flac,.aac,.webm,.mp4,.mov";
+
 
 // ── Headers ───────────────────────────────────────────────────────────────────
 async function authHeaders(): Promise<Record<string, string>> {
@@ -125,7 +126,9 @@ function uploadToGCS(
 
     xhr.open("PUT", uploadUrl);
     // GCS signed URL requires Content-Type to be absent or match what was signed.
-    // We sign without a content_type constraint so we omit it here.
+    // We sign without a content_type constraint so we omit it here, but the
+    // browser MUST send the correct Content-Type for the PUT request to succeed.
+    xhr.setRequestHeader("Content-Type", file.type);
     xhr.send(file);
   });
 }
@@ -322,6 +325,16 @@ export async function translateTranscript(jobId: string): Promise<{ translated_t
     headers: await authHeaders(),
   });
 
+  if (!res.ok) throw await parseError(res);
+  return res.json();
+}
+
+// ── POST /billing/checkout ────────────────────────────────────────────────────
+export async function createCheckoutSession(): Promise<{ checkout_url: string }> {
+  const res = await fetch(`${BASE_URL}/billing/checkout`, {
+    method: "POST",
+    headers: await authHeaders(),
+  });
   if (!res.ok) throw await parseError(res);
   return res.json();
 }
