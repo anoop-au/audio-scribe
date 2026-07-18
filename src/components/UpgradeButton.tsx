@@ -3,35 +3,24 @@ import { Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { getPaddle } from "@/lib/paddle";
-
-const PRO_PRICE_ID = import.meta.env.VITE_PADDLE_PRICE_PRO as string;
+import { createCheckoutSession } from "@/lib/api";
 
 export default function UpgradeButton() {
   const { session } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const handleUpgrade = async () => {
-    const user = session?.user;
-    if (!user?.email) {
+    if (!session?.user) {
       toast.error("Sign in to upgrade your plan.");
       return;
     }
 
     setLoading(true);
     try {
-      const paddle = await getPaddle();
-      if (!paddle) {
-        toast.error("Checkout is unavailable right now — please try again shortly.");
-        return;
-      }
-
-      paddle.Checkout.open({
-        items: [{ priceId: PRO_PRICE_ID, quantity: 1 }],
-        customer: { email: user.email },
-        customData: { user_id: user.id },
-      });
-    } finally {
+      const { checkout_url } = await createCheckoutSession();
+      window.location.href = checkout_url;
+    } catch {
+      toast.error("Checkout is unavailable right now — please try again shortly.");
       setLoading(false);
     }
   };
