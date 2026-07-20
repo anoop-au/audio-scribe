@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Check, Copy, Download, Share2, RotateCcw, FileText, Clock, Globe, Hash, Target, Languages, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,30 @@ function ConfidenceRing({ value }: { value: number }) {
   );
 }
 
+function renderTranscript(transcript: string) {
+  const parts = transcript.split(/(\[NOISE\]|\[SILENCE\])/g);
+  return parts.map((part, i) => {
+    if (part === "[NOISE]" || part === "[SILENCE]") {
+      return <span key={i} className="text-muted-foreground italic">{part}</span>;
+    }
+    return part;
+  });
+}
+
 export default function ResultsScreen({ result, jobResult = null, onReset }: ResultsScreenProps) {
+  const transcriptRef = useRef<HTMLDivElement>(null);
+  const [scrollState, setScrollState] = useState({ atTop: true, atBottom: true });
+
+  const updateScrollState = () => {
+    const el = transcriptRef.current;
+    if (!el) return;
+    setScrollState({
+      atTop: el.scrollTop <= 4,
+      atBottom: el.scrollTop + el.clientHeight >= el.scrollHeight - 4,
+    });
+  };
+
+  useEffect(() => { updateScrollState(); }, [result.transcript, showTranslation, translatedText]);
   const [selectedFormat, setSelectedFormat] = useState<string>("TXT");
   const [copied, setCopied] = useState(false);
   const [translating, setTranslating] = useState(false);
@@ -224,7 +247,7 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
       </motion.div>
 
       {/* Step 3: Transcription Canvas */}
-      <motion.div {...fadeUp(0.6)} className="w-full max-h-[500px] overflow-hidden">
+      <motion.div {...fadeUp(0.6)} className="w-full">
         {translatedText && (
           <div className="flex gap-2 mb-2">
             <button
@@ -243,29 +266,20 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
             </button>
           </div>
         )}
-        <div
-          className="glassmorphism-card rounded-2xl p-5 relative overflow-hidden h-full"
-          style={{
-            background: "linear-gradient(180deg, rgba(255,106,0,0.06) 0%, rgba(255,255,255,0.02) 30%, rgba(0,0,0,0) 100%)",
-            boxShadow: "inset 0 1px 0 rgba(255,106,0,0.12), inset 0 8px 24px -8px rgba(255,106,0,0.08), 0 0 32px -8px rgba(255,106,0,0.06)",
-          }}
-        >
-          {/* Top glow overlay */}
+        <div className="glassmorphism-card rounded-2xl p-5 relative overflow-hidden">
+          {!scrollState.atTop && (
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-8 z-10 bg-gradient-to-b from-card/80 to-transparent rounded-t-2xl" />
+          )}
+          {!scrollState.atBottom && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 z-10 bg-gradient-to-t from-card/80 to-transparent rounded-b-2xl" />
+          )}
           <div
-            className="pointer-events-none absolute inset-x-0 top-0 h-20 z-10 rounded-t-2xl"
-            style={{
-              background: "linear-gradient(180deg, rgba(255,106,0,0.07) 0%, rgba(255,106,0,0.02) 40%, transparent 100%)",
-            }}
-          />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 z-10 bg-gradient-to-t from-card/80 to-transparent rounded-b-2xl" />
-          <div
-            className="h-full overflow-y-auto text-sm leading-relaxed tracking-tight whitespace-pre-line pr-4 relative z-20"
-            style={{
-              scrollbarWidth: "thin",
-              scrollbarColor: "rgba(255,106,0,0.3) transparent",
-            }}
+            ref={transcriptRef}
+            onScroll={updateScrollState}
+            className="max-h-[min(32rem,60vh)] overflow-y-auto text-sm leading-relaxed tracking-tight text-foreground/85 whitespace-pre-line pr-2"
+            style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,106,0,0.3) transparent" }}
           >
-            {showTranslation && translatedText ? translatedText : result.transcript}
+            {showTranslation && translatedText ? translatedText : renderTranscript(result.transcript)}
           </div>
         </div>
       </motion.div>
