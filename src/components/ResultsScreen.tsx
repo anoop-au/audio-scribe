@@ -85,12 +85,13 @@ export default function ResultsScreen({ result, jobResult = null, onReset }: Res
     });
   };
 
+  const [showTranslation, setShowTranslation] = useState(false);
+  const [translatedText, setTranslatedText] = useState<string | null>(null);
+
   useEffect(() => { updateScrollState(); }, [result.transcript, showTranslation, translatedText]);
   const [selectedFormat, setSelectedFormat] = useState<string>("TXT");
   const [copied, setCopied] = useState(false);
   const [translating, setTranslating] = useState(false);
-  const [showTranslation, setShowTranslation] = useState(false);
-  const [translatedText, setTranslatedText] = useState<string | null>(null);
   const { downloadTxt, downloadDocx, downloadPdf, downloadJson, copyToClipboard } = useDownloads(jobResult);
 
   const handleTranslate = async () => {
